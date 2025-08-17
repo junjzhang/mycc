@@ -50,7 +50,7 @@ if [ $INSTALLED -eq 0 ]; then
 fi
 
 echo "[FOUND] $INSTALLED CCPlugins commands installed"
-read -p "Remove all CCPlugins commands? (y/N): " -n 1 -r
+read -p "Remove all CCPlugins commands? (y/N): " -r
 echo
 
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
@@ -73,7 +73,7 @@ CACHE_DIR="$HOME/.claude/.ccplugins_cache"
 BACKUP_DIR="$HOME/.claude/.ccplugins_backups"
 
 if [ -d "$CACHE_DIR" ] || [ -d "$BACKUP_DIR" ]; then
-    read -p "Also remove cache and backups? (y/N): " -n 1 -r
+    read -p "Also remove cache and backups? (y/N): " -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         [ -d "$CACHE_DIR" ] && rm -rf "$CACHE_DIR" && echo "  - Removed cache directory"

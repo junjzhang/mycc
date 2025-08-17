@@ -45,7 +45,7 @@ done
 
 if [ $EXISTING -gt 0 ]; then
     echo "[WARNING] Found $EXISTING existing commands"
-    read -p "Overwrite existing commands? (y/N): " -n 1 -r
+    read -p "Overwrite existing commands? (y/N): " -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         echo "[CANCELLED] Installation cancelled."
