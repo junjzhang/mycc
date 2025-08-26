@@ -8,33 +8,24 @@ echo "===================="
 
 COMMANDS_DIR="$HOME/.claude/commands"
 
-# List of CCPlugins commands (including old ones for compatibility)
-COMMANDS=(
-    "cleanproject.md"
-    "commit.md"
-    "contributing.md"
-    "create-todos.md"
-    "docs.md"
-    "explain-like-senior.md"
-    "find-todos.md"
-    "fix-imports.md"
-    "fix-todos.md"
-    "format.md"
-    "implement.md"
-    "make-it-pretty.md"
-    "predict-issues.md"
-    "remove-comments.md"
-    "review.md"
-    "scaffold.md"
-    "security-scan.md"
-    "session-end.md"
-    "session-start.md"
-    "test.md"
-    "todos-to-issues.md"
-    "undo.md"
-    "understand.md"
-    "refactor.md"
-)
+# Get list of commands from the commands directory
+COMMANDS_SRC_DIR="$(cd "$(dirname "$0")" && pwd)/commands"
+if [ ! -d "$COMMANDS_SRC_DIR" ]; then
+    echo "[WARNING] 'commands' directory not found. Using a predefined list of commands for cleanup."
+    COMMANDS=(
+        "cleanproject.md" "commit.md" "contributing.md" "create-todos.md" "docs.md"
+        "explain-like-senior.md" "find-todos.md" "fix-imports.md" "fix-todos.md"
+        "format.md" "implement.md" "make-it-pretty.md" "predict-issues.md"
+        "remove-comments.md" "review.md" "scaffold.md" "security-scan.md"
+        "session-end.md" "session-start.md" "test.md" "todos-to-issues.md"
+        "undo.md" "understand.md" "refactor.md"
+    )
+else
+    COMMANDS=()
+    while IFS= read -r -d $'\0' file; do
+        COMMANDS+=("$(basename "$file")")
+    done < <(find "$COMMANDS_SRC_DIR" -name "*.md" -print0)
+fi
 
 # Count installed commands
 INSTALLED=0
