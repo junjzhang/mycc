@@ -376,7 +376,7 @@ class ClaudeUserSettingModule:
         try:
             # Execute claude mcp add command
             scope = server_info.get("scope", "user")
-            cmd = ["claude", "mcp", "add", server_key, "--scope", scope, "--"] + server_info["package"].split()
+            cmd = ["claude", "mcp", "add", server_key, "-s", scope, "--"] + server_info["package"].split()
 
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
 
@@ -437,7 +437,7 @@ class ClaudeUserSettingModule:
 
         try:
             # Execute claude mcp remove command
-            cmd = ["claude", "mcp", "remove", server_key, "--scope", "user"]
+            cmd = ["claude", "mcp", "remove", server_key, "-s", "user"]
 
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
 
@@ -470,12 +470,15 @@ class ClaudeUserSettingModule:
     def _is_mcp_server_installed(self, server_key: str) -> bool:
         """Check if a specific MCP server is installed."""
         try:
-            result = subprocess.run(
-                ["claude", "mcp", "list", "--scope", "user"], capture_output=True, text=True, timeout=30
-            )
+            result = subprocess.run(["claude", "mcp", "list"], capture_output=True, text=True, timeout=30)
 
             if result.returncode == 0:
-                return server_key in result.stdout
+                # Look for server_key at the beginning of a line followed by ': '
+                # This matches the format: "context7: npx -y @upstash/context7-mcp - ✓ Connected"
+                import re
+
+                pattern = rf"^{re.escape(server_key)}:\s"
+                return bool(re.search(pattern, result.stdout, re.MULTILINE))
             else:
                 return False
 
