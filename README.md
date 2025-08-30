@@ -2,21 +2,6 @@
 
 A modern, modular configuration management system for Claude Code, built with Python, Tyro, and Pixi. MYCC allows you to easily install, manage, and configure Claude Code commands and settings.
 
-## ✨ Features
-
-- 🧩 **Modular Design**: Commands, configurations, and future extensions as separate modules
-- 🎯 **Type-Safe CLI**: Built with Tyro and Pydantic for excellent developer experience
-- 📦 **Modern Packaging**: Uses Pixi for dependency management and Python packaging
-- 🔗 **Smart Configuration**: Automatic backup and symbolic linking of config files
-- 🎨 **Rich Output**: Colorized terminal output with clear status indicators
-- ⚡ **Fast & Reliable**: Python-based with minimal dependencies
-- 🛠️ **Dependency Management**: Automatic detection and installation of Claude Code and tools
-
-## 📋 Requirements
-
-- **Python 3.10+** (uses modern PEP 585 type hints)
-- [Pixi](https://pixi.sh) (recommended) or pip
-
 ## 🚀 Quick Start
 
 ### Option 1: Using Pixi (Recommended)
@@ -166,6 +151,7 @@ MYCC automatically detects and can install required dependencies:
 - **Claude Code**: The main CLI tool (`@anthropic-ai/claude-code`)
 - **ccstatusline**: Status line enhancement (optional)
 - **TweakCC**: Claude Code enhancement and customization tool (optional)
+- **ccusage**: Usage analysis and monitoring tool (optional)
 
 ```bash
 # Check what's installed
@@ -178,16 +164,6 @@ pixi run deps-install
 # Skip dependency checks with --skip-deps flag
 python -m mycc install-command --all --skip-deps
 ```
-
-## 🤝 Contributing
-
-Contributions are welcome! This project follows modern Python development practices:
-
-- **Python 3.10+**: Uses PEP 585 type hints (`list[str]` instead of `List[str]`)
-- **Type Safety**: Full type annotations with Pydantic models  
-- **Code Quality**: Ruff formatting and linting
-- **Testing**: pytest for unit tests and safe test mode for development
-- **Documentation**: Clear docstrings and README
 
 ## 🙏 Acknowledgments
 

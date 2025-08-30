@@ -45,6 +45,13 @@ class DependencyChecker:
             check_command="tweakcc --version",
             install_command="npm install -g tweakcc",
             required=False
+        ),
+        'ccusage': DependencyInfo(
+            name="ccusage",
+            package="ccusage",
+            check_command="ccusage --version",
+            install_command="npm install -g ccusage",
+            required=False
         )
     }
     
@@ -63,7 +70,7 @@ class DependencyChecker:
         """Check if an npm package is installed globally"""
         if self.test_mode:
             # In test mode, simulate package status
-            return package in ["ccstatusline", "tweakcc"]  # Simulate some packages exist
+            return package in ["ccstatusline", "tweakcc", "ccusage"]  # Simulate some packages exist
         
         try:
             result = subprocess.run(
@@ -114,6 +121,10 @@ class DependencyChecker:
     def check_tweakcc(self) -> bool:
         """Check if TweakCC is installed"""
         return self.check_npm_package("tweakcc")
+    
+    def check_ccusage(self) -> bool:
+        """Check if ccusage is installed"""
+        return self.check_npm_package("ccusage")
     
     def check_mcp_support(self) -> bool:
         """Check if Claude Code MCP commands are available"""
@@ -191,6 +202,8 @@ class DependencyChecker:
                 is_installed = self.check_ccstatusline()
             elif key == 'tweakcc':
                 is_installed = self.check_tweakcc()
+            elif key == 'ccusage':
+                is_installed = self.check_ccusage()
             else:
                 is_installed = False
             
@@ -245,6 +258,8 @@ class DependencyChecker:
             elif dep_key == 'ccstatusline':
                 install_success = self.install_npm_package(dep.package, dep.name)
             elif dep_key == 'tweakcc':
+                install_success = self.install_npm_package(dep.package, dep.name)
+            elif dep_key == 'ccusage':
                 install_success = self.install_npm_package(dep.package, dep.name)
             else:
                 install_success = False

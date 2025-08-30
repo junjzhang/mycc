@@ -1,3 +1,2 @@
-"""
-Modules for managing different types of Claude Code configurations
+"""Modules for managing different types of Claude Code configurations
 """

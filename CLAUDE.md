@@ -50,7 +50,7 @@ Installed via `claude mcp add` commands with user scope.
 
 ## Dependencies
 
-Managed automatically: Claude Code (required), ccstatusline + TweakCC (optional)
+Managed automatically: Claude Code (required), ccstatusline + TweakCC + ccusage (optional)
 
 ## Important Notes
 

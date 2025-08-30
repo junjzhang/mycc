@@ -1,13 +1,13 @@
-"""
-MCP Module - Manages Model Context Protocol servers
+"""MCP Module - Manages Model Context Protocol servers
 """
 
 import subprocess
-from pathlib import Path
 from typing import NamedTuple
+from pathlib import Path
+
+from colorama import Fore, Style
 
 from mycc.modules.base import BaseModule
-from colorama import Fore, Style
 
 
 class MCPServerInfo(NamedTuple):

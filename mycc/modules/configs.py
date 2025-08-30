@@ -1,8 +1,6 @@
-"""
-Configs Module - Manages Claude Code configuration files
+"""Configs Module - Manages Claude Code configuration files
 """
 
-import json
 from pathlib import Path
 
 from mycc.modules.base import BaseModule

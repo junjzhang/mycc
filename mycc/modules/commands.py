@@ -1,5 +1,4 @@
-"""
-Commands Module - Manages Claude Code command files
+"""Commands Module - Manages Claude Code command files
 """
 
 import shutil
