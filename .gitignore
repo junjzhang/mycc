@@ -2,5 +2,6 @@
 .pixi
 .ruff_cache
 output
+.test_*
 
 __pycache__

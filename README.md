@@ -12,6 +12,9 @@ Install MYCC globally using pixi:
 # Install the basic version (most users)
 pixi global install --channel conda-forge mycc
 
+# Or install from local build (for developers)
+pixi global install --channel conda-forge --channel ./output mycc
+
 # Verify installation
 mycc --help
 mycc version

@@ -1,6 +1,7 @@
 """Configs Module - Manages Claude Code configuration files."""
 
 from pathlib import Path
+from importlib import resources
 
 from mycc.modules.base import BaseModule
 
@@ -10,27 +11,42 @@ class ConfigsModule(BaseModule):
 
     def __init__(self, project_root: Path, target_root: Path, test_mode: bool = False, home_dir: Path | None = None):
         super().__init__(project_root, target_root, test_mode)
-        self.config_dir = self.project_root / "config"
         self.target_dir = target_root
         self.home_dir = home_dir or (Path.cwd() / ".test_home" if test_mode else Path.home())
+
+    def _get_config_path(self) -> Path:
+        """Get the path to config data directory."""
+        try:
+            # Use importlib.resources to get the config directory
+            import mycc.data.config
+            with resources.path('mycc.data.config', '') as config_path:
+                return config_path
+        except (ImportError, FileNotFoundError):
+            # Fallback to development environment
+            return self.project_root / "mycc" / "data" / "config"
 
     def install(self) -> bool:
         """Install configuration files."""
         try:
+            config_dir = self._get_config_path()
+            if not config_dir.exists():
+                print(f"Config directory not found: {config_dir}")
+                return False
+
             success = True
 
             # Install Claude settings
-            claude_config = self.config_dir / "claude" / "settings.json"
+            claude_config = config_dir / "claude" / "settings.json"
             if claude_config.exists():
                 success &= self._install_claude_settings(claude_config)
 
             # Install ccstatusline settings
-            statusline_config = self.config_dir / "ccstatusline" / "settings.json"
+            statusline_config = config_dir / "ccstatusline" / "settings.json"
             if statusline_config.exists():
                 success &= self._install_statusline_settings(statusline_config)
 
             # Install TweakCC settings
-            tweakcc_config = self.config_dir / "tweakcc" / "config.json"
+            tweakcc_config = config_dir / "tweakcc" / "config.json"
             if tweakcc_config.exists():
                 success &= self._install_tweakcc_settings(tweakcc_config)
 
@@ -162,16 +178,20 @@ class ConfigsModule(BaseModule):
     def get_files(self) -> list[str]:
         """Get list of config files."""
         files = []
+        config_dir = self._get_config_path()
+        
+        if not config_dir.exists():
+            return files
 
-        claude_config = self.config_dir / "claude" / "settings.json"
+        claude_config = config_dir / "claude" / "settings.json"
         if claude_config.exists():
             files.append("claude/settings.json")
 
-        statusline_config = self.config_dir / "ccstatusline" / "settings.json"
+        statusline_config = config_dir / "ccstatusline" / "settings.json"
         if statusline_config.exists():
             files.append("ccstatusline/settings.json")
 
-        tweakcc_config = self.config_dir / "tweakcc" / "config.json"
+        tweakcc_config = config_dir / "tweakcc" / "config.json"
         if tweakcc_config.exists():
             files.append("tweakcc/config.json")
 

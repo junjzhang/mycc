@@ -70,7 +70,10 @@ class ConfigManager:
         try:
             return self.modules[module_name].install()
         except Exception as e:
+            import traceback
             print(f"Error installing {module_name}: {e}")
+            print("Full traceback:")
+            traceback.print_exc()
             return False
 
     def uninstall_module(self, module_name: str) -> bool:

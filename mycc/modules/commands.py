@@ -2,6 +2,7 @@
 
 import shutil
 from pathlib import Path
+from importlib import resources
 
 from mycc.modules.base import BaseModule
 
@@ -11,23 +12,35 @@ class CommandsModule(BaseModule):
 
     def __init__(self, project_root: Path, target_root: Path, test_mode: bool = False):
         super().__init__(project_root, target_root, test_mode)
-        self.source_dir = self.project_root / "commands"
         self.target_dir = self.target_root / "commands"
+
+    def _get_commands_path(self) -> Path:
+        """Get the path to commands data directory."""
+        try:
+            # Use importlib.resources to get the commands directory
+            import mycc.data.commands
+            with resources.path('mycc.data.commands', '') as commands_path:
+                return commands_path
+        except (ImportError, FileNotFoundError):
+            # Fallback to development environment
+            return self.project_root / "mycc" / "data" / "commands"
 
     def install(self) -> bool:
         """Install command files to ~/.claude/commands/."""
         try:
-            if not self.source_dir.exists():
-                print(f"Commands source directory not found: {self.source_dir}")
+            source_dir = self._get_commands_path()
+            
+            if not source_dir.exists():
+                print(f"Commands source directory not found: {source_dir}")
                 return False
 
             # Ensure target directory exists
             self.target_dir.mkdir(parents=True, exist_ok=True)
 
             # Copy all .md files
-            command_files = list(self.source_dir.glob("*.md"))
+            command_files = list(source_dir.glob("*.md"))
             if not command_files:
-                print(f"No command files found in {self.source_dir}")
+                print(f"No command files found in {source_dir}")
                 return False
 
             for cmd_file in command_files:
@@ -49,7 +62,8 @@ class CommandsModule(BaseModule):
                 return True  # Already uninstalled
 
             # Get list of our command files
-            source_files = set(f.name for f in self.source_dir.glob("*.md")) if self.source_dir.exists() else set()
+            source_dir = self._get_commands_path()
+            source_files = set(f.name for f in source_dir.glob("*.md")) if source_dir.exists() else set()
 
             removed_count = 0
             for cmd_file in self.target_dir.glob("*.md"):
@@ -67,10 +81,14 @@ class CommandsModule(BaseModule):
 
     def is_installed(self) -> bool:
         """Check if commands are installed."""
-        if not self.target_dir.exists() or not self.source_dir.exists():
+        if not self.target_dir.exists():
             return False
 
-        source_files = set(f.name for f in self.source_dir.glob("*.md"))
+        source_dir = self._get_commands_path()
+        if not source_dir.exists():
+            return False
+
+        source_files = set(f.name for f in source_dir.glob("*.md"))
         target_files = set(f.name for f in self.target_dir.glob("*.md"))
 
         # Check if at least some of our commands are installed
@@ -86,7 +104,8 @@ class CommandsModule(BaseModule):
 
     def get_files(self) -> list[str]:
         """Get list of command files."""
-        if not self.source_dir.exists():
+        source_dir = self._get_commands_path()
+        if not source_dir.exists():
             return []
 
-        return [f.name for f in self.source_dir.glob("*.md")]
+        return [f.name for f in source_dir.glob("*.md")]
