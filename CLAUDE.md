@@ -88,14 +88,10 @@ pixi global install mycc
 pixi global install --channel conda-forge --channel ./output mycc
 ```
 
-## Important Notes
-
-- Always use test mode (`--test-mode` or `MYCC_TEST_MODE=1`) for development
-- CLI uses Union types for Tyro subcommands, not `tyro.conf.subcommand`
-- All modules extend BaseModule with test mode support
-- Data files are accessed via `importlib.resources` for packaging compatibility
-- **Modern Build System**: Uses Hatchling+Hatch-VCS instead of setuptools-scm
-- **Pixi Build**: Uses `pixi build` with rattler-build backend for faster packaging
-- Packages are built as `noarch` for cross-platform compatibility
+# important-instruction-reminders
+- Do what has been asked; nothing more, nothing less.
+- NEVER create files unless they're absolutely necessary for achieving your goal.
+- ALWAYS prefer editing an existing file to creating a new one.
+- NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
 - Run any python command with `pixi run <command>`
 - Remember to use the GitHub CLI (`gh`) for all GitHub-related tasks

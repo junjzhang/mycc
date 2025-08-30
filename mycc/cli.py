@@ -1,252 +1,216 @@
 #!/usr/bin/env python3
-"""MYCC CLI - Main command line interface using tyro and pydantic."""
+"""MYCC CLI - Simplified command line interface using tyro and pydantic."""
 
+import os
 import sys
-from enum import Enum
+from typing import List, Optional
 from pathlib import Path
 
 import tyro
 from pydantic import Field, BaseModel
 
 from mycc import __version__
-from mycc.core.logger import get_logger, set_test_mode
-from mycc.core.manager import ConfigManager
-
-# Get project root directory
-PROJECT_ROOT = Path(__file__).parent.parent
-
-
-class ModuleType(str, Enum):
-    """Available module types."""
-
-    commands = "commands"
-    configs = "configs"
-    mcp = "mcp"
+from mycc.manager import ModuleManager
 
 
 class Install(BaseModel):
     """Install Claude Code modules."""
 
-    modules: list[ModuleType] | None = Field(
-        default=None, description="Modules to install. If not specified, use --all"
+    modules: Optional[List[str]] = Field(
+        default=None, description="Modules to install: 'deps', 'commands', 'configs', 'mcp', or 'claude_user_setting'"
     )
     all: bool = Field(default=False, description="Install all available modules")
-    test_mode: bool = Field(default=False, description="Use test mode (safe for development)")
-    test_dir: Path | None = Field(default=None, description="Test directory path (default: current directory)")
-    skip_deps: bool = Field(default=False, description="Skip dependency installation checks")
-    no_auto_deps: bool = Field(default=False, description="Don't automatically install missing dependencies")
+    skip_deps: bool = Field(default=False, description="Skip dependency checks")
 
     def run(self):
-        # Set up logger with test mode
-        logger = get_logger()
-        if self.test_mode:
-            set_test_mode(True)
+        # Handle test mode from environment
+        test_mode = bool(os.getenv("MYCC_TEST_MODE", ""))
 
-        manager = ConfigManager(PROJECT_ROOT, self.test_mode, self.test_dir)
-
-        if self.test_mode:
-            logger.info("Using fake directories for safe testing")
-
-        # Check dependencies before installation (unless skipped)
-        if not self.skip_deps:
-            deps_ok = manager.ensure_dependencies(auto_install=not self.no_auto_deps)
-            if not deps_ok and not self.test_mode:
-                logger.warning("Some dependencies are missing. Installation may not work correctly.")
-
-        if self.all:
-            modules = [ModuleType.commands, ModuleType.configs, ModuleType.mcp]
-            logger.info("Installing all modules (commands, configs, mcp)...")
-        elif self.modules:
-            modules = self.modules
+        # Set up paths for test mode if needed
+        if test_mode:
+            claude_dir = Path.cwd() / ".test_claude"
+            home_dir = Path.cwd() / ".test_home"
+            # Use real data directory but test install locations
+            manager = ModuleManager(claude_dir, home_dir)
+            print("🧪 Using test mode with temporary directories")
         else:
-            logger.warning("No modules specified. Use --all to install everything.")
+            manager = ModuleManager()
+
+        # Install all modules
+        if self.all:
+            success = manager.install_all()
+            if success:
+                print("✅ All modules installed successfully")
+            else:
+                print("❌ Some modules failed to install")
+                sys.exit(1)
             return
 
-        for module in modules:
-            try:
-                success = manager.install_module(module.value)
-                logger.install_feedback(module.value, success)
-            except Exception as e:
-                logger.install_feedback(module.value, False, str(e))
+        # Install specific modules
+        if not self.modules:
+            print("❌ No modules specified. Use --all to install everything or specify modules.")
+            print("Available modules: deps, claude_user_setting")
+            print("Claude user setting sub-modules: commands, configs, mcp")
+            return
+
+        success = True
+        for module_spec in self.modules:
+            # Handle sub-module specifications like "claude_user_setting:commands,configs"
+            if ":" in module_spec:
+                module_name, sub_modules_str = module_spec.split(":", 1)
+                sub_modules = [sm.strip() for sm in sub_modules_str.split(",")]
+                result = manager.install_module(module_name, sub_modules=sub_modules)
+            else:
+                result = manager.install_module(module_spec)
+
+            if not result:
+                success = False
+
+        if not success:
+            sys.exit(1)
 
 
 class Uninstall(BaseModel):
     """Uninstall Claude Code modules."""
 
-    modules: list[ModuleType] | None = Field(
-        default=None, description="Modules to uninstall. If not specified, use --all"
-    )
+    modules: Optional[List[str]] = Field(default=None, description="Modules to uninstall")
     all: bool = Field(default=False, description="Uninstall all modules")
-    test_mode: bool = Field(default=False, description="Use test mode (safe for development)")
-    test_dir: Path | None = Field(default=None, description="Test directory path (default: current directory)")
 
     def run(self):
-        # Set up logger with test mode
-        logger = get_logger()
-        if self.test_mode:
-            set_test_mode(True)
+        # Handle test mode from environment
+        test_mode = bool(os.getenv("MYCC_TEST_MODE", ""))
 
-        manager = ConfigManager(PROJECT_ROOT, self.test_mode, self.test_dir)
-
-        if self.test_mode:
-            logger.info("Using fake directories for safe testing")
-
-        if self.all:
-            modules = [ModuleType.commands, ModuleType.configs, ModuleType.mcp]
-            logger.warning("Uninstalling all modules (commands, configs, mcp)...")
-        elif self.modules:
-            modules = self.modules
+        # Set up paths for test mode if needed
+        if test_mode:
+            claude_dir = Path.cwd() / ".test_claude"
+            home_dir = Path.cwd() / ".test_home"
+            # Use real data directory but test install locations
+            manager = ModuleManager(claude_dir, home_dir)
+            print("🧪 Using test mode with temporary directories")
         else:
-            logger.warning("No modules specified. Use --all to uninstall everything.")
+            manager = ModuleManager()
+
+        # Uninstall all modules
+        if self.all:
+            success = True
+            for module_name in ["deps", "claude_user_setting"]:
+                if not manager.uninstall_module(module_name):
+                    success = False
+
+            if success:
+                print("✅ All modules uninstalled successfully")
+            else:
+                print("❌ Some modules failed to uninstall")
+                sys.exit(1)
             return
 
-        for module in modules:
-            try:
-                success = manager.uninstall_module(module.value)
-                if success:
-                    logger.success(f"Uninstalled {module.value} module")
-                else:
-                    logger.failure(f"Failed to uninstall {module.value} module")
-            except Exception as e:
-                logger.failure(f"Error uninstalling {module.value}: {e}")
+        # Uninstall specific modules
+        if not self.modules:
+            print("❌ No modules specified. Use --all to uninstall everything.")
+            return
 
-
-class Link(BaseModel):
-    """Link configuration files to Claude directories."""
-
-    test_mode: bool = Field(default=False, description="Use test mode (safe for development)")
-    test_dir: Path | None = Field(default=None, description="Test directory path (default: current directory)")
-
-    def run(self):
-        # Set up logger with test mode
-        logger = get_logger()
-        if self.test_mode:
-            set_test_mode(True)
-
-        manager = ConfigManager(PROJECT_ROOT, self.test_mode, self.test_dir)
-
-        if self.test_mode:
-            logger.info("Using fake directories for safe testing")
-
-        try:
-            success = manager.link_configs()
-            if success:
-                logger.success("Configuration files linked successfully")
+        success = True
+        for module_spec in self.modules:
+            # Handle sub-module specifications
+            if ":" in module_spec:
+                module_name, sub_modules_str = module_spec.split(":", 1)
+                sub_modules = [sm.strip() for sm in sub_modules_str.split(",")]
+                result = manager.uninstall_module(module_name, sub_modules=sub_modules)
             else:
-                logger.failure("Failed to link configuration files")
-        except Exception as e:
-            logger.failure(f"Error linking configs: {e}")
+                result = manager.uninstall_module(module_spec)
+
+            if not result:
+                success = False
+
+        if not success:
+            sys.exit(1)
 
 
 class Status(BaseModel):
     """Show installation status of modules."""
 
-    test_mode: bool = Field(default=False, description="Use test mode (safe for development)")
-    test_dir: Path | None = Field(default=None, description="Test directory path (default: current directory)")
+    module: Optional[str] = Field(default=None, description="Show status for specific module")
 
     def run(self):
-        # Set up logger with test mode
-        logger = get_logger()
-        if self.test_mode:
-            set_test_mode(True)
+        # Handle test mode from environment
+        test_mode = bool(os.getenv("MYCC_TEST_MODE", ""))
 
-        manager = ConfigManager(PROJECT_ROOT, self.test_mode, self.test_dir)
+        # Set up paths for test mode if needed
+        if test_mode:
+            claude_dir = Path.cwd() / ".test_claude"
+            home_dir = Path.cwd() / ".test_home"
+            data_dir = Path.cwd() / ".test_data"
+            manager = ModuleManager(claude_dir, home_dir, data_dir)
+        else:
+            manager = ModuleManager()
 
-        if manager.test_mode:
-            logger.info("Using fake directories")
-
-        logger.section("MYCC Status")
-
-        status_info = manager.get_status()
-
-        for module, info in status_info.items():
-            if info["installed"]:
-                logger.success(f"{module:<12} {info['description']}")
-                if "path" in info:
-                    logger.info(f"  Path: {info['path']}")
-            else:
-                logger.failure(f"{module:<12} {info['description']}")
+        # Show status for specific module or all modules
+        manager.show_status(self.module)
 
 
 class List(BaseModel):
     """List available modules."""
 
-    test_mode: bool = Field(default=False, description="Use test mode (safe for development)")
-    test_dir: Path | None = Field(default=None, description="Test directory path (default: current directory)")
-
     def run(self):
-        # Set up logger with test mode
-        logger = get_logger()
-        if self.test_mode:
-            set_test_mode(True)
+        # Handle test mode from environment
+        test_mode = bool(os.getenv("MYCC_TEST_MODE", ""))
 
-        manager = ConfigManager(PROJECT_ROOT, self.test_mode, self.test_dir)
+        # Set up paths for test mode if needed
+        if test_mode:
+            claude_dir = Path.cwd() / ".test_claude"
+            home_dir = Path.cwd() / ".test_home"
+            data_dir = Path.cwd() / ".test_data"
+            manager = ModuleManager(claude_dir, home_dir, data_dir)
+        else:
+            manager = ModuleManager()
 
-        if self.test_mode:
-            logger.info("Listing modules")
-
-        logger.section("Available Modules")
-
-        modules = manager.get_available_modules()
-
-        for module, info in modules.items():
-            logger.success(f"{module:<12} {info['description']}")
-            if "files" in info:
-                logger.info(f"  Files: {len(info['files'])} items")
+        # List all available modules
+        manager.list_modules()
 
 
 class Version(BaseModel):
     """Show version information."""
 
     def run(self):
-        logger = get_logger()
-        logger.info(f"MYCC version {__version__}")
+        print(f"MYCC version {__version__}")
 
 
 class Deps(BaseModel):
-    """Check and manage dependencies."""
-
-    test_mode: bool = Field(default=False, description="Use test mode (safe for development)")
-    install: bool = Field(default=False, description="Install missing dependencies")
+    """Check dependencies."""
 
     def run(self):
-        # Set up logger with test mode
-        logger = get_logger()
-        if self.test_mode:
-            set_test_mode(True)
+        # Handle test mode from environment
+        test_mode = bool(os.getenv("MYCC_TEST_MODE", ""))
 
-        manager = ConfigManager(PROJECT_ROOT, self.test_mode)
-
-        if self.test_mode:
-            logger.info("Checking dependencies in test mode")
-
-        if self.install:
-            success = manager.ensure_dependencies(auto_install=True)
-            if success:
-                logger.success("All dependencies are ready!")
-            else:
-                logger.failure("Some dependencies failed to install.")
-                sys.exit(1)
+        # Set up paths for test mode if needed
+        if test_mode:
+            claude_dir = Path.cwd() / ".test_claude"
+            home_dir = Path.cwd() / ".test_home"
+            # Use real data directory but test install locations
+            manager = ModuleManager(claude_dir, home_dir)
+            print("🧪 Using test mode")
         else:
-            # Just check and report status
-            manager.check_dependencies()
+            manager = ModuleManager()
+
+        # Just install deps module which checks dependencies
+        success = manager.install_module("deps")
+        if not success:
+            sys.exit(1)
 
 
 def main():
     """Main entry point."""
     try:
         args = tyro.cli(
-            Install | Uninstall | Link | Status | List | Version | Deps,
+            Install | Uninstall | Status | List | Version | Deps,
             description="MYCC - A modular Claude Code configuration manager",
         )
         args.run()
     except KeyboardInterrupt:
-        logger = get_logger()
-        logger.warning("Operation cancelled by user")
+        print("\n❌ Operation cancelled by user")
         sys.exit(1)
     except Exception as e:
-        logger = get_logger()
-        logger.error(f"Unexpected error: {e}")
+        print(f"❌ Unexpected error: {e}")
         sys.exit(1)
 
 

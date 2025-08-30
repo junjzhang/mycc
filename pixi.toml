@@ -45,9 +45,7 @@ build = "MYCC_VERSION=$(pixi run -e build hatch version) rattler-build build --r
 clean-build = "rm -rf ./output"
 
 # Package upload tasks
-upload = "python scripts/upload.py --type all"
-upload-basic = "python scripts/upload.py --type basic"  
-upload-full = "python scripts/upload.py --type full"
+upload = "python scripts/upload.py"
 
 [dependencies]
 python = ">=3.10"

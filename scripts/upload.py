@@ -147,10 +147,6 @@ Examples:
     )
 
     parser.add_argument(
-        "--type", "-t", choices=["basic", "full", "all"], default="all", help="Package type to upload (default: all)"
-    )
-
-    parser.add_argument(
         "--delete", "-d", action="store_true", help="Delete local package files after successful upload"
     )
 
@@ -171,13 +167,12 @@ Examples:
 
     # Determine package prefix based on type
     prefix_map = {"basic": "mycc-", "full": "mycc-full-", "all": "*"}
-    prefix = prefix_map[args.type]
+    prefix = prefix_map["all"]
 
     # Find packages
     packages = uploader.find_packages(prefix)
 
     if not packages:
-        print(f"❌ No packages found matching type '{args.type}'")
         sys.exit(1)
 
     if args.dry_run:
