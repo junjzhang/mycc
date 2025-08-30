@@ -47,13 +47,10 @@ MCP (Model Context Protocol) servers provide enhanced capabilities:
 
 Installed via `claude mcp add` commands with user scope.
 
-## Dependencies
-
-Managed automatically: Claude Code (required), ccstatusline + TweakCC + ccusage (optional)
-
 ## Important Notes
 
 - Always use test mode (`--test-mode` or `MYCC_TEST_MODE=1`) for development
 - CLI uses Union types for Tyro subcommands, not `tyro.conf.subcommand`
 - All modules extend BaseModule with test mode support
 - Run any python command with `pixi run <command>`
+- Remember to use the GitHub CLI (`gh`) for all GitHub-related tasks

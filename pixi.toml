@@ -7,17 +7,17 @@ channels = ["conda-forge"]
 platforms = ["linux-64", "osx-64", "osx-arm64"]
 
 [tasks]
-install = "python -m mycc install-command --all"
-uninstall = "python -m mycc uninstall-command --all"
-install-commands = "python -m mycc install-command --modules commands"
-install-configs = "python -m mycc install-command --modules configs"
-link-configs = "python -m mycc link-command"
-status = "python -m mycc status-command"
-list = "python -m mycc list-command"
+install = "python -m mycc install --all"
+uninstall = "python -m mycc uninstall --all"
+install-commands = "python -m mycc install --modules commands"
+install-configs = "python -m mycc install --modules configs"
+link-configs = "python -m mycc link"
+status = "python -m mycc status"
+list = "python -m mycc list"
 
 # Dependency management
-deps = "python -m mycc deps-command"
-deps-install = "python -m mycc deps-command --install"
+deps = "python -m mycc deps"
+deps-install = "python -m mycc deps --install"
 
 # Development tasks
 dev-install = "pip install -e ."
