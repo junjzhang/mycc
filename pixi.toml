@@ -1,6 +1,6 @@
 [project]
 name = "mycc"
-version = "0.0.2"
+# Version is managed by setuptools-scm from Git tags
 description = "A modular Claude Code configuration manager"
 authors = ["junjzhang <junjzhang@example.com>"]
 channels = ["conda-forge"]
@@ -56,8 +56,7 @@ python = ">=3.10"
 tyro = ">=0.8.0"
 pydantic = ">=2.0.0"
 colorama = ">=0.4.4"
-pyyaml = ">=6.0"
-
+tomli = ">=1.2.0"
 [feature.dev.dependencies]
 pip = "*"
 pytest = ">=7.0.0"

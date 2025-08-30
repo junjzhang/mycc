@@ -1,10 +1,9 @@
 """Commands Module - Manages Claude Code command files."""
-
 import shutil
 from pathlib import Path
-from importlib import resources
 
 from mycc.modules.base import BaseModule
+from mycc.core.resources import get_commands_directory, list_command_files, ResourceAccessError
 
 
 class CommandsModule(BaseModule):
@@ -17,39 +16,55 @@ class CommandsModule(BaseModule):
     def _get_commands_path(self) -> Path:
         """Get the path to commands data directory."""
         try:
-            # Use importlib.resources to get the commands directory
-            import mycc.data.commands
-            with resources.path('mycc.data.commands', '') as commands_path:
-                return commands_path
-        except (ImportError, FileNotFoundError):
-            # Fallback to development environment
-            return self.project_root / "mycc" / "data" / "commands"
+            return get_commands_directory()
+        except ResourceAccessError as e:
+            # Fallback to development path
+            fallback_path = self.project_root / "mycc" / "data" / "commands"
+            if fallback_path.exists():
+                return fallback_path
+            # Re-raise with more context if fallback also fails
+            raise ResourceAccessError(
+                f"Failed to access commands directory: {e}\n"
+                f"Fallback path '{fallback_path}' also does not exist."
+            )
 
     def install(self) -> bool:
         """Install command files to ~/.claude/commands/."""
         try:
-            source_dir = self._get_commands_path()
-            
-            if not source_dir.exists():
-                print(f"Commands source directory not found: {source_dir}")
+            # Use unified resource access to get command files
+            command_files = list_command_files()
+            if not command_files:
+                print("No command files found in package resources")
                 return False
 
             # Ensure target directory exists
             self.target_dir.mkdir(parents=True, exist_ok=True)
 
-            # Copy all .md files
-            command_files = list(source_dir.glob("*.md"))
-            if not command_files:
-                print(f"No command files found in {source_dir}")
-                return False
-
+            # Copy all command files
+            copied_count = 0
             for cmd_file in command_files:
-                target_file = self.target_dir / cmd_file.name
-                shutil.copy2(cmd_file, target_file)
-                print(f"  + {cmd_file.name}")
+                try:
+                    target_file = self.target_dir / cmd_file.name
+                    # Handle both Path objects and resource references
+                    if hasattr(cmd_file, 'read_text'):
+                        # Resource reference - read content and write to target
+                        content = cmd_file.read_text(encoding='utf-8')
+                        target_file.write_text(content, encoding='utf-8')
+                    else:
+                        # Regular Path object - use standard copy
+                        shutil.copy2(cmd_file, target_file)
+                    print(f"  + {cmd_file.name}")
+                    copied_count += 1
+                except Exception as e:
+                    print(f"  ! Failed to copy {cmd_file.name}: {e}")
+                    continue
 
-            print(f"Installed {len(command_files)} commands to {self.target_dir}")
-            return True
+            if copied_count > 0:
+                print(f"Installed {copied_count} commands to {self.target_dir}")
+                return True
+            else:
+                print("Failed to install any command files")
+                return False
 
         except Exception as e:
             print(f"Error installing commands: {e}")
@@ -61,9 +76,13 @@ class CommandsModule(BaseModule):
             if not self.target_dir.exists():
                 return True  # Already uninstalled
 
-            # Get list of our command files
-            source_dir = self._get_commands_path()
-            source_files = set(f.name for f in source_dir.glob("*.md")) if source_dir.exists() else set()
+            # Get list of our command files using unified resource access
+            try:
+                command_files = list_command_files()
+                source_files = set(f.name for f in command_files)
+            except ResourceAccessError:
+                # If we can't access resources, remove all .md files in target
+                source_files = set(f.name for f in self.target_dir.glob("*.md"))
 
             removed_count = 0
             for cmd_file in self.target_dir.glob("*.md"):
@@ -84,11 +103,14 @@ class CommandsModule(BaseModule):
         if not self.target_dir.exists():
             return False
 
-        source_dir = self._get_commands_path()
-        if not source_dir.exists():
+        try:
+            # Use unified resource access to get command files
+            command_files = list_command_files()
+            source_files = set(f.name for f in command_files)
+        except ResourceAccessError:
+            # If resource access fails, assume not installed
             return False
 
-        source_files = set(f.name for f in source_dir.glob("*.md"))
         target_files = set(f.name for f in self.target_dir.glob("*.md"))
 
         # Check if at least some of our commands are installed
@@ -104,8 +126,9 @@ class CommandsModule(BaseModule):
 
     def get_files(self) -> list[str]:
         """Get list of command files."""
-        source_dir = self._get_commands_path()
-        if not source_dir.exists():
+        try:
+            command_files = list_command_files()
+            return [f.name for f in command_files]
+        except ResourceAccessError:
+            # If resource access fails, return empty list
             return []
-
-        return [f.name for f in source_dir.glob("*.md")]

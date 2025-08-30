@@ -29,7 +29,7 @@ mycc install --all
 # Check installation status
 mycc status
 
-# Link configuration files
+# Link configuration files (reuses configs module)
 mycc link
 
 # Show available modules
@@ -136,13 +136,14 @@ pixi run upload
 
 ```
 mycc/
-├── mycc/                     # Python package
-│   ├── cli.py               # CLI interface
-│   ├── core/manager.py      # Core functionality
-│   └── modules/             # Module handlers
-├── commands/                # 24 Claude Code commands  
-├── config/                  # Configuration templates
-└── scripts/                 # Build and deployment
+├── mycc/                         # Python package
+│   ├── cli.py                   # CLI interface
+│   ├── core/manager.py          # Core functionality
+│   ├── modules/                 # Module handlers
+│   └── data/                    # Packaged data (included in wheel)
+│       ├── commands/            # Claude Code slash commands (.md)
+│       └── config/              # Configuration templates (.json)
+└── scripts/                     # Build and deployment
 ```
 
 ## 🗑️ Uninstall

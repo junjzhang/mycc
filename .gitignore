@@ -4,4 +4,6 @@
 output
 .test_*
 
+*.egg-info/
+
 __pycache__

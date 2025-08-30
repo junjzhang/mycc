@@ -54,8 +54,8 @@ class Install(BaseModel):
                 )
 
         if self.all:
-            modules = [ModuleType.commands, ModuleType.configs]
-            print(f"{Fore.GREEN}Installing all modules...{Style.RESET_ALL}")
+            modules = [ModuleType.commands, ModuleType.configs, ModuleType.mcp]
+            print(f"{Fore.GREEN}Installing all modules (commands, configs, mcp)...{Style.RESET_ALL}")
         elif self.modules:
             modules = self.modules
         else:
@@ -90,8 +90,8 @@ class Uninstall(BaseModel):
             print(f"{Fore.CYAN}[TEST MODE] Using fake directories for safe testing{Style.RESET_ALL}")
 
         if self.all:
-            modules = [ModuleType.commands, ModuleType.configs]
-            print(f"{Fore.YELLOW}Uninstalling all modules...{Style.RESET_ALL}")
+            modules = [ModuleType.commands, ModuleType.configs, ModuleType.mcp]
+            print(f"{Fore.YELLOW}Uninstalling all modules (commands, configs, mcp)...{Style.RESET_ALL}")
         elif self.modules:
             modules = self.modules
         else:

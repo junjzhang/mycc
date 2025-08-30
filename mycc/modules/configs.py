@@ -1,9 +1,10 @@
 """Configs Module - Manages Claude Code configuration files."""
 
 from pathlib import Path
-from importlib import resources
 
 from mycc.modules.base import BaseModule
+from mycc.modules.config_registry import ConfigRegistry, ConfigEntry, ConfigRegistryError
+from mycc.core.resources import get_config_directory, ResourceAccessError
 
 
 class ConfigsModule(BaseModule):
@@ -13,159 +14,134 @@ class ConfigsModule(BaseModule):
         super().__init__(project_root, target_root, test_mode)
         self.target_dir = target_root
         self.home_dir = home_dir or (Path.cwd() / ".test_home" if test_mode else Path.home())
+        self.registry = ConfigRegistry()
 
     def _get_config_path(self) -> Path:
         """Get the path to config data directory."""
         try:
-            # Use importlib.resources to get the config directory
-            import mycc.data.config
-            with resources.path('mycc.data.config', '') as config_path:
-                return config_path
-        except (ImportError, FileNotFoundError):
-            # Fallback to development environment
-            return self.project_root / "mycc" / "data" / "config"
+            return get_config_directory()
+        except ResourceAccessError as e:
+            # Fallback to development path
+            fallback_path = self.project_root / "mycc" / "data" / "config"
+            if fallback_path.exists():
+                return fallback_path
+            # Re-raise with more context if fallback also fails
+            raise ResourceAccessError(
+                f"Failed to access config directory: {e}\n"
+                f"Fallback path '{fallback_path}' also does not exist."
+            )
 
     def install(self) -> bool:
         """Install configuration files."""
         try:
-            config_dir = self._get_config_path()
-            if not config_dir.exists():
-                print(f"Config directory not found: {config_dir}")
-                return False
+            config_base_dir = self._get_config_path()
+        except ResourceAccessError as e:
+            print(f"Error accessing config directory: {e}")
+            return False
+
+        try:
+            entries = self.registry.get_all_entries()
 
             success = True
-
-            # Install Claude settings
-            claude_config = config_dir / "claude" / "settings.json"
-            if claude_config.exists():
-                success &= self._install_claude_settings(claude_config)
-
-            # Install ccstatusline settings
-            statusline_config = config_dir / "ccstatusline" / "settings.json"
-            if statusline_config.exists():
-                success &= self._install_statusline_settings(statusline_config)
-
-            # Install TweakCC settings
-            tweakcc_config = config_dir / "tweakcc" / "config.json"
-            if tweakcc_config.exists():
-                success &= self._install_tweakcc_settings(tweakcc_config)
+            for name, entry in entries.items():
+                try:
+                    success &= self._install_config_entry(entry, config_base_dir)
+                except Exception as e:
+                    print(f"Error installing {name}: {e}")
+                    success = False
 
             return success
 
+        except ConfigRegistryError as e:
+            print(f"Configuration registry error: {e}")
+            return False
         except Exception as e:
             print(f"Error installing configs: {e}")
             return False
 
-    def _install_claude_settings(self, source: Path) -> bool:
-        """Install Claude settings.json."""
+    def _install_config_entry(self, entry: ConfigEntry, config_base_dir: Path) -> bool:
+        """Install a single configuration entry."""
         try:
-            target = self.target_dir / "settings.json"
+            # Get source and target paths
+            source = entry.get_source_path(config_base_dir)
+            if not source.exists():
+                if entry.required:
+                    print(f"  Warning: Required config file not found: {source}")
+                    return False
+                else:
+                    print(f"  Skipping optional config: {source}")
+                    return True
 
-            # Backup existing file if it exists
-            if target.exists() and not target.is_symlink():
-                backup = target.with_suffix(".json.backup")
-                target.rename(backup)
-                print(f"  Backed up existing settings to {backup}")
+            target = entry.get_target_path(self.home_dir, self.target_dir)
 
-            # Create symlink
-            if target.is_symlink():
-                target.unlink()
+            # Create target directory if needed
+            if entry.create_dirs:
+                target.parent.mkdir(parents=True, exist_ok=True)
 
+            # Handle existing files/symlinks
+            if target.exists() or target.is_symlink():
+                if target.is_symlink():
+                    # Remove existing symlink
+                    target.unlink()
+                else:
+                    # Handle regular file
+                    if entry.backup_existing:
+                        backup = target.with_suffix(target.suffix + ".backup")
+                        target.rename(backup)
+                        print(f"  Backed up existing {entry.name} to {backup}")
+                    else:
+                        # Remove without backup
+                        target.unlink()
+
+            # Create new symlink
             target.symlink_to(source.resolve())
-            print(f"  + Linked Claude settings.json")
+            print(f"  + Linked {entry.name}")
             return True
 
         except Exception as e:
-            print(f"Error installing Claude settings: {e}")
-            return False
-
-    def _install_statusline_settings(self, source: Path) -> bool:
-        """Install ccstatusline settings.json."""
-        try:
-            target_dir = self.home_dir / ".config" / "ccstatusline"
-            target_dir.mkdir(parents=True, exist_ok=True)
-            target = target_dir / "settings.json"
-
-            # Backup existing file if it exists
-            if target.exists() and not target.is_symlink():
-                backup = target.with_suffix(".json.backup")
-                target.rename(backup)
-                print(f"  Backed up existing ccstatusline settings to {backup}")
-
-            # Create symlink
-            if target.is_symlink():
-                target.unlink()
-
-            target.symlink_to(source.resolve())
-            print(f"  + Linked ccstatusline settings.json")
-            return True
-
-        except Exception as e:
-            print(f"Error installing ccstatusline settings: {e}")
-            return False
-
-    def _install_tweakcc_settings(self, source: Path) -> bool:
-        """Install TweakCC config.json."""
-        try:
-            target_dir = self.home_dir / ".tweakcc"
-            target_dir.mkdir(parents=True, exist_ok=True)
-            target = target_dir / "config.json"
-
-            # Backup existing file if it exists
-            if target.exists() and not target.is_symlink():
-                backup = target.with_suffix(".json.backup")
-                target.rename(backup)
-                print(f"  Backed up existing TweakCC config to {backup}")
-
-            # Create symlink
-            if target.is_symlink():
-                target.unlink()
-
-            target.symlink_to(source.resolve())
-            print(f"  + Linked TweakCC config.json")
-            return True
-
-        except Exception as e:
-            print(f"Error installing TweakCC config: {e}")
+            print(f"Error installing {entry.name}: {e}")
             return False
 
     def uninstall(self) -> bool:
         """Remove installed configuration files."""
         try:
+            entries = self.registry.get_all_entries()
+
             success = True
-
-            # Remove Claude settings link
-            claude_settings = self.target_dir / "settings.json"
-            if claude_settings.is_symlink():
-                claude_settings.unlink()
-                print("  - Removed Claude settings link")
-
-            # Remove ccstatusline settings link
-            statusline_settings = self.home_dir / ".config" / "ccstatusline" / "settings.json"
-            if statusline_settings.is_symlink():
-                statusline_settings.unlink()
-                print("  - Removed ccstatusline settings link")
-
-            # Remove TweakCC config link
-            tweakcc_config = self.home_dir / ".tweakcc" / "config.json"
-            if tweakcc_config.is_symlink():
-                tweakcc_config.unlink()
-                print("  - Removed TweakCC config link")
+            for entry in entries.values():
+                try:
+                    target = entry.get_target_path(self.home_dir, self.target_dir)
+                    if target.is_symlink():
+                        target.unlink()
+                        print(f"  - Removed {entry.name} link")
+                except Exception as e:
+                    print(f"Error uninstalling {entry.name}: {e}")
+                    success = False
 
             return success
 
+        except ConfigRegistryError as e:
+            print(f"Configuration registry error: {e}")
+            return False
         except Exception as e:
             print(f"Error uninstalling configs: {e}")
             return False
 
     def is_installed(self) -> bool:
         """Check if configurations are installed."""
-        claude_settings = self.target_dir / "settings.json"
-        statusline_settings = self.home_dir / ".config" / "ccstatusline" / "settings.json"
-        tweakcc_config = self.home_dir / ".tweakcc" / "config.json"
+        try:
+            entries = self.registry.get_all_entries()
 
-        # Check if at least one config is linked
-        return claude_settings.is_symlink() or statusline_settings.is_symlink() or tweakcc_config.is_symlink()
+            # Check if at least one config is linked
+            for entry in entries.values():
+                target = entry.get_target_path(self.home_dir, self.target_dir)
+                if target.is_symlink():
+                    return True
+            return False
+
+        except (ConfigRegistryError, Exception):
+            # Fallback to false if registry loading fails
+            return False
 
     def get_description(self) -> str:
         """Get module description."""
@@ -177,22 +153,18 @@ class ConfigsModule(BaseModule):
 
     def get_files(self) -> list[str]:
         """Get list of config files."""
-        files = []
-        config_dir = self._get_config_path()
-        
-        if not config_dir.exists():
+        try:
+            entries = self.registry.get_all_entries()
+            config_base_dir = self._get_config_path()
+
+            files = []
+            for entry in entries.values():
+                source = entry.get_source_path(config_base_dir)
+                if source.exists():
+                    files.append(entry.source_path)
+
             return files
 
-        claude_config = config_dir / "claude" / "settings.json"
-        if claude_config.exists():
-            files.append("claude/settings.json")
-
-        statusline_config = config_dir / "ccstatusline" / "settings.json"
-        if statusline_config.exists():
-            files.append("ccstatusline/settings.json")
-
-        tweakcc_config = config_dir / "tweakcc" / "config.json"
-        if tweakcc_config.exists():
-            files.append("tweakcc/config.json")
-
-        return files
+        except (ConfigRegistryError, ResourceAccessError, Exception):
+            # Fallback to empty list if registry loading fails
+            return []

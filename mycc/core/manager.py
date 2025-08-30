@@ -28,7 +28,6 @@ class ConfigManager:
             self.claude_dir = Path.home() / ".claude"
             self.home_dir = Path.home()
 
-        self.config_dir = self.project_root / "config"
 
         # Initialize dependency checker
         self.dependency_checker = DependencyChecker(self.test_mode)
@@ -88,23 +87,13 @@ class ConfigManager:
             return False
 
     def link_configs(self) -> bool:
-        """Link all configuration files."""
+        """Link all configuration files via the Configs module.
+
+        Delegates to ConfigsModule.install() to ensure consistent behavior
+        across CLI commands and proper handling of test mode paths.
+        """
         try:
-            # Link Claude settings
-            claude_config = self.config_dir / "claude" / "settings.json"
-            claude_target = self.claude_dir / "settings.json"
-
-            if claude_config.exists():
-                self._create_symlink(claude_config, claude_target)
-
-            # Link ccstatusline settings
-            statusline_config = self.config_dir / "ccstatusline" / "settings.json"
-            statusline_target = Path.home() / ".config" / "ccstatusline" / "settings.json"
-
-            if statusline_config.exists():
-                self._create_symlink(statusline_config, statusline_target)
-
-            return True
+            return self.modules["configs"].install()
         except Exception as e:
             print(f"Error linking configs: {e}")
             return False

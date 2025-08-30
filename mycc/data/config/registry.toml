@@ -1,0 +1,32 @@
+# Configuration Registry
+# Defines all configuration files and their installation rules
+
+[configs.claude_settings]
+description = "Claude Code settings.json configuration"
+source_path = "claude/settings.json"
+target_path = "settings.json"
+relative_to_home = false
+relative_to_config = true  # Relative to ~/.claude
+backup_existing = true
+create_dirs = true
+required = true
+
+[configs.ccstatusline_settings]
+description = "ccstatusline settings.json configuration"
+source_path = "ccstatusline/settings.json"
+target_path = ".config/ccstatusline/settings.json"
+relative_to_home = true
+relative_to_config = false
+backup_existing = true
+create_dirs = true
+required = true
+
+[configs.tweakcc_config]
+description = "TweakCC config.json configuration"
+source_path = "tweakcc/config.json"
+target_path = ".tweakcc/config.json"
+relative_to_home = true
+relative_to_config = false
+backup_existing = true
+create_dirs = true
+required = true

@@ -1,7 +1,7 @@
 # MYCC Full Recipe - All dependencies included
 context:
   name: mycc-full
-  version: "0.0.2"
+  version: ${{ env["SETUPTOOLS_SCM_PRETEND_VERSION"] or "dev" }}
 
 package:
   name: "${{ name }}"
@@ -38,14 +38,15 @@ requirements:
   host:
     - python >=3.10
     - pip
-    - hatchling
+    - setuptools >=64
+    - setuptools-scm >=8
     - nodejs >=18
   run:
     - python >=3.10
     - tyro >=0.8.0
     - pydantic >=2.0.0
     - colorama >=0.4.4
-    - pyyaml >=6.0
+    - tomli >=1.2.0
     - nodejs >=18
 
 tests:
