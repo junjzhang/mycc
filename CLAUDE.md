@@ -20,8 +20,8 @@ pixi run install             # Install all modules
 pixi run status              # Show installation status
 
 # Module-specific installation
-python -m mycc install-command --modules commands,configs,mcp
-python -m mycc install-command --modules mcp --test-mode
+python -m mycc install --modules commands,configs,mcp
+python -m mycc install --modules mcp --test-mode
 
 # Development
 pixi run dev-test            # Full test suite with auto-cleanup
@@ -29,8 +29,8 @@ pixi run lint                # Ruff check (dev environment)
 pixi run format              # Ruff format (dev environment)
 
 # Testing
-python -m mycc install-command --all --test-mode
-MYCC_TEST_MODE=1 python -m mycc status-command
+python -m mycc install --all --test-mode
+MYCC_TEST_MODE=1 python -m mycc status
 ```
 
 ## Configuration Management
@@ -44,7 +44,6 @@ Configs in `config/` are symbolically linked with automatic backup:
 
 MCP (Model Context Protocol) servers provide enhanced capabilities:
 - **context7**: Document analysis and context management
-- **playwright**: Browser automation and web scraping
 
 Installed via `claude mcp add` commands with user scope.
 
@@ -57,3 +56,4 @@ Managed automatically: Claude Code (required), ccstatusline + TweakCC + ccusage 
 - Always use test mode (`--test-mode` or `MYCC_TEST_MODE=1`) for development
 - CLI uses Union types for Tyro subcommands, not `tyro.conf.subcommand`
 - All modules extend BaseModule with test mode support
+- Run any python command with `pixi run <command>`

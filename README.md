@@ -36,23 +36,23 @@ MYCC provides a clean, type-safe CLI with the following commands:
 python -m mycc --help
 
 # Install modules
-python -m mycc install-command --all                    # Install all modules
-python -m mycc install-command --modules commands       # Install commands only
-python -m mycc install-command --modules configs        # Install configs only
+python -m mycc install --all                    # Install all modules
+python -m mycc install --modules commands       # Install commands only
+python -m mycc install --modules configs        # Install configs only
 
 # Dependency management
-python -m mycc deps-command                              # Check dependencies
-python -m mycc deps-command --install                    # Install missing dependencies
+python -m mycc deps                              # Check dependencies
+python -m mycc deps --install                    # Install missing dependencies
 
 # Manage configurations  
-python -m mycc link-command                              # Link config files
+python -m mycc link                              # Link config files
 
 # Check status
-python -m mycc status-command                            # Show installation status
-python -m mycc list-command                              # List available modules
+python -m mycc status                            # Show installation status
+python -m mycc list                              # List available modules
 
 # Uninstall
-python -m mycc uninstall-command --all                  # Remove all modules
+python -m mycc uninstall --all                  # Remove all modules
 ```
 
 ### Pixi Tasks (Shortcuts)
@@ -132,11 +132,11 @@ MYCC includes a safe test mode for development that uses fake directories instea
 
 ```bash
 # Test mode via CLI flags
-python -m mycc install-command --all --test-mode
-python -m mycc status-command --test-mode
+python -m mycc install --all --test-mode
+python -m mycc status --test-mode
 
 # Test mode via environment variable
-MYCC_TEST_MODE=1 python -m mycc status-command
+MYCC_TEST_MODE=1 python -m mycc status
 
 # Comprehensive test suite
 pixi run dev-test
@@ -162,7 +162,7 @@ pixi run deps-install
 
 # During module installation, dependencies are checked automatically
 # Skip dependency checks with --skip-deps flag
-python -m mycc install-command --all --skip-deps
+python -m mycc install --all --skip-deps
 ```
 
 ## 🙏 Acknowledgments

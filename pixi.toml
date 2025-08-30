@@ -28,12 +28,12 @@ format = "ruff format mycc"
 # Test mode tasks (safe for development)
 dev-test = """
     echo "🧪 Running comprehensive MYCC test suite..." &&
-    python -m mycc deps-command --test-mode &&
-    python -m mycc install-command --all --test-mode &&
-    python -m mycc status-command --test-mode &&
-    python -m mycc list-command --test-mode &&
-    python -m mycc link-command --test-mode &&
-    python -m mycc uninstall-command --all --test-mode &&
+    python -m mycc deps --test-mode &&
+    python -m mycc install --all --test-mode &&
+    python -m mycc status --test-mode &&
+    python -m mycc list --test-mode &&
+    python -m mycc link --test-mode &&
+    python -m mycc uninstall --all --test-mode &&
     echo "🧹 Cleaning up test directories..." &&
     rm -rf .test_claude .test_home &&
     echo "✅ All tests completed successfully!"

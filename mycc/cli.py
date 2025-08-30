@@ -26,7 +26,7 @@ class ModuleType(str, Enum):
     mcp = "mcp"
 
 
-class InstallCommand(BaseModel):
+class Install(BaseModel):
     """Install Claude Code modules."""
 
     modules: list[ModuleType] | None = Field(
@@ -86,7 +86,7 @@ class InstallCommand(BaseModel):
                 print(f"{Fore.RED}✗ Error installing {module.value}: {e}{Style.RESET_ALL}")
 
 
-class UninstallCommand(BaseModel):
+class Uninstall(BaseModel):
     """Uninstall Claude Code modules."""
 
     modules: list[ModuleType] | None = Field(
@@ -132,7 +132,7 @@ class UninstallCommand(BaseModel):
                 print(f"{Fore.RED}✗ Error uninstalling {module.value}: {e}{Style.RESET_ALL}")
 
 
-class LinkCommand(BaseModel):
+class Link(BaseModel):
     """Link configuration files to Claude directories."""
 
     test_mode: bool = Field(
@@ -160,7 +160,7 @@ class LinkCommand(BaseModel):
             print(f"{Fore.RED}✗ Error linking configs: {e}{Style.RESET_ALL}")
 
 
-class StatusCommand(BaseModel):
+class Status(BaseModel):
     """Show installation status of modules."""
 
     test_mode: bool = Field(
@@ -192,7 +192,7 @@ class StatusCommand(BaseModel):
                 print(f"  {'Path:':<10} {info['path']}")
 
 
-class ListCommand(BaseModel):
+class List(BaseModel):
     """List available modules."""
 
     test_mode: bool = Field(
@@ -221,14 +221,14 @@ class ListCommand(BaseModel):
                 print(f"  {'Files:':<10} {len(info['files'])} items")
 
 
-class VersionCommand(BaseModel):
+class Version(BaseModel):
     """Show version information."""
     
     def run(self):
         print(f"MYCC version {__version__}")
 
 
-class DepsCommand(BaseModel):
+class Deps(BaseModel):
     """Check and manage dependencies."""
 
     test_mode: bool = Field(
@@ -263,13 +263,13 @@ def main():
     try:
         
         args = tyro.cli(
-            InstallCommand
-            | UninstallCommand 
-            | LinkCommand
-            | StatusCommand
-            | ListCommand
-            | VersionCommand
-            | DepsCommand,
+            Install
+            | Uninstall 
+            | Link
+            | Status
+            | List
+            | Version
+            | Deps,
             description="MYCC - A modular Claude Code configuration manager"
         )
         args.run()

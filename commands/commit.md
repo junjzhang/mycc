@@ -54,6 +54,8 @@ fi
 git diff --cached --name-status
 ```
 
+I will check if there is PR template under `{work_dir}/.github/PULL_REQUEST_TEMPLATE`, I will use it as the commit message body.
+
 Based on the analysis, I'll create a conventional commit message:
 - **Type**: feat|fix|docs|style|refactor|test|chore
 - **Scope**: component or area affected (optional)
@@ -65,7 +67,7 @@ Based on the analysis, I'll create a conventional commit message:
 # Example: git commit -m "fix(auth): resolve login timeout issue"
 ```
 
-The commit message will be concise, meaningful, and follow your project's conventions if I can detect them from recent commits. If you have a PR template under `.github/PULL_REQUEST_TEMPLATE`, I will use it to structure the commit message.
+The commit message will be concise, meaningful, and follow your project's conventions if I can detect them from recent commits. 
 
 **Important**: I will NEVER:
 - Add "Co-authored-by" or any Claude signatures

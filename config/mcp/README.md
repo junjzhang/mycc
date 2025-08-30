@@ -18,10 +18,10 @@ MCP servers are installed using the MYCC MCP module:
 pixi run install --modules mcp
 
 # Or use direct Python command
-python -m mycc install-command --modules mcp
+python -m mycc install --modules mcp
 
 # Test mode (safe for development)
-python -m mycc install-command --modules mcp --test-mode
+python -m mycc install --modules mcp --test-mode
 ```
 
 ## Configuration
