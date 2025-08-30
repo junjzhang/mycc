@@ -41,7 +41,7 @@ class Install(BaseModel):
         logger = get_logger()
         if self.test_mode:
             set_test_mode(True)
-            
+
         manager = ConfigManager(PROJECT_ROOT, self.test_mode, self.test_dir)
 
         if self.test_mode:
@@ -85,7 +85,7 @@ class Uninstall(BaseModel):
         logger = get_logger()
         if self.test_mode:
             set_test_mode(True)
-            
+
         manager = ConfigManager(PROJECT_ROOT, self.test_mode, self.test_dir)
 
         if self.test_mode:
@@ -118,11 +118,11 @@ class Link(BaseModel):
     test_dir: Path | None = Field(default=None, description="Test directory path (default: current directory)")
 
     def run(self):
-        # Set up logger with test mode  
+        # Set up logger with test mode
         logger = get_logger()
         if self.test_mode:
             set_test_mode(True)
-            
+
         manager = ConfigManager(PROJECT_ROOT, self.test_mode, self.test_dir)
 
         if self.test_mode:
@@ -149,7 +149,7 @@ class Status(BaseModel):
         logger = get_logger()
         if self.test_mode:
             set_test_mode(True)
-            
+
         manager = ConfigManager(PROJECT_ROOT, self.test_mode, self.test_dir)
 
         if manager.test_mode:
@@ -179,7 +179,7 @@ class List(BaseModel):
         logger = get_logger()
         if self.test_mode:
             set_test_mode(True)
-            
+
         manager = ConfigManager(PROJECT_ROOT, self.test_mode, self.test_dir)
 
         if self.test_mode:
@@ -214,7 +214,7 @@ class Deps(BaseModel):
         logger = get_logger()
         if self.test_mode:
             set_test_mode(True)
-            
+
         manager = ConfigManager(PROJECT_ROOT, self.test_mode)
 
         if self.test_mode:

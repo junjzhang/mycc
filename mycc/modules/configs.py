@@ -2,10 +2,10 @@
 
 from pathlib import Path
 
+from mycc.core.logger import get_logger
 from mycc.modules.base import BaseModule
 from mycc.core.resources import ResourceAccessError, get_config_directory
 from mycc.modules.config_registry import ConfigEntry, ConfigRegistry, ConfigRegistryError
-from mycc.core.logger import get_logger
 
 
 class ConfigsModule(BaseModule):
@@ -29,9 +29,8 @@ class ConfigsModule(BaseModule):
                 return fallback_path
             # Re-raise with more context if fallback also fails
             raise ResourceAccessError(
-                f"Failed to access config directory: {e}\n"
-                f"Fallback path '{fallback_path}' also does not exist."
-            )
+                f"Failed to access config directory: {e}\nFallback path '{fallback_path}' also does not exist."
+            ) from e
 
     def install(self) -> bool:
         """Install configuration files."""

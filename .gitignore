@@ -1,9 +1,12 @@
 .claude/*.local.*
 .pixi
-.ruff_cache
-output
 .test_*
 
+# build
 *.egg-info/
+output
 
+# cache
 __pycache__
+.pytest_cache
+.ruff_cache

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-MYCC is a modular Claude Code configuration manager built with Python 3.10+. Uses Pixi for dependency management, Tyro+Pydantic for CLI, and PEP 585 type hints.
+MYCC is a modular Claude Code configuration manager built with Python 3.10+. Uses Pixi for dependency management, Hatchling+Hatch-VCS for modern packaging, Tyro+Pydantic for CLI, and PEP 585 type hints.
 
 ## Architecture
 
@@ -62,17 +62,22 @@ MYCC is distributed as conda packages with two variants:
 - **Full (`mycc-full`)**: Includes Node.js and npm dependencies
 
 ### Building Packages
-```bash
-# Build both variants
-pixi run -e build build-all
 
-# Build specific variant
-pixi run -e build build-basic
-pixi run -e build build-full
+Uses `pixi build` with rattler-build backend for modern, fast conda package creation:
+
+```bash
+# Build both variants using pixi build
+pixi run -e build build
 
 # Clean build artifacts
 pixi run -e build clean-build
 ```
+
+### Build System
+
+- **Backend**: `pixi-build-rattler-build` for modern conda packaging
+- **Versioning**: `hatch-vcs` automatically manages versions from git tags
+- **Configuration**: `pixi.toml` with workspace preview features enabled
 
 ### Installation
 ```bash
@@ -89,6 +94,8 @@ pixi global install --channel conda-forge --channel ./output mycc
 - CLI uses Union types for Tyro subcommands, not `tyro.conf.subcommand`
 - All modules extend BaseModule with test mode support
 - Data files are accessed via `importlib.resources` for packaging compatibility
+- **Modern Build System**: Uses Hatchling+Hatch-VCS instead of setuptools-scm
+- **Pixi Build**: Uses `pixi build` with rattler-build backend for faster packaging
 - Packages are built as `noarch` for cross-platform compatibility
 - Run any python command with `pixi run <command>`
 - Remember to use the GitHub CLI (`gh`) for all GitHub-related tasks

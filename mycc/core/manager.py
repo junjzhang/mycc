@@ -5,11 +5,11 @@ import shutil
 from typing import Any
 from pathlib import Path
 
+from mycc.core.logger import get_logger
 from mycc.modules.mcp import MCPModule
 from mycc.modules.configs import ConfigsModule
 from mycc.modules.commands import CommandsModule
 from mycc.utils.dependencies import DependencyChecker
-from mycc.core.logger import get_logger
 
 
 class ConfigManager:
@@ -29,7 +29,6 @@ class ConfigManager:
             # Production mode
             self.claude_dir = Path.home() / ".claude"
             self.home_dir = Path.home()
-
 
         # Initialize dependency checker
         self.dependency_checker = DependencyChecker(self.test_mode)
@@ -72,6 +71,7 @@ class ConfigManager:
             return self.modules[module_name].install()
         except Exception as e:
             import traceback
+
             self.logger.error(f"Error installing {module_name}: {e}")
             self.logger.error("Full traceback:")
             traceback.print_exc()

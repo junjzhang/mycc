@@ -1,6 +1,6 @@
 [build-system]
-build-backend = "setuptools.build_meta"
-requires = ["setuptools>=64", "setuptools-scm>=8"]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
 
 [project]
 name = "mycc"
@@ -32,24 +32,20 @@ text = "MIT"
 Homepage = "https://github.com/junjzhang/mycc"
 Repository = "https://github.com/junjzhang/mycc.git"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["mycc*"]
+[tool.hatch.version]
+source = "vcs"
 
-[tool.setuptools.package-data]
-"mycc" = [
-  "data/commands/*.md",
-  "data/config/**/*"
+[tool.hatch.build.targets.wheel]
+packages = ["mycc"]
+include = [
+  "mycc/data/**",
 ]
 
-[tool.setuptools_scm]
-# Git tag-based versioning
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.0.0",
-    "black>=22.0.0",
-    "ruff>=0.1.0",
+[tool.hatch.build.targets.sdist]
+include = [
+  "/mycc",
+  "/README.md",
+  "/LICENSE",
 ]
 
 [tool.ruff]

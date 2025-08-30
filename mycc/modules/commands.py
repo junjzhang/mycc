@@ -1,10 +1,11 @@
 """Commands Module - Manages Claude Code command files."""
+
 import shutil
 from pathlib import Path
 
+from mycc.core.logger import get_logger
 from mycc.modules.base import BaseModule
 from mycc.core.resources import ResourceAccessError, list_command_files, get_commands_directory
-from mycc.core.logger import get_logger
 
 
 class CommandsModule(BaseModule):
@@ -26,9 +27,8 @@ class CommandsModule(BaseModule):
                 return fallback_path
             # Re-raise with more context if fallback also fails
             raise ResourceAccessError(
-                f"Failed to access commands directory: {e}\n"
-                f"Fallback path '{fallback_path}' also does not exist."
-            )
+                f"Failed to access commands directory: {e}\nFallback path '{fallback_path}' also does not exist."
+            ) from e
 
     def install(self) -> bool:
         """Install command files to ~/.claude/commands/."""
@@ -48,10 +48,10 @@ class CommandsModule(BaseModule):
                 try:
                     target_file = self.target_dir / cmd_file.name
                     # Handle both Path objects and resource references
-                    if hasattr(cmd_file, 'read_text'):
+                    if hasattr(cmd_file, "read_text"):
                         # Resource reference - read content and write to target
-                        content = cmd_file.read_text(encoding='utf-8')
-                        target_file.write_text(content, encoding='utf-8')
+                        content = cmd_file.read_text(encoding="utf-8")
+                        target_file.write_text(content, encoding="utf-8")
                     else:
                         # Regular Path object - use standard copy
                         shutil.copy2(cmd_file, target_file)

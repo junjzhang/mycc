@@ -1,21 +1,20 @@
-# MYCC Basic Recipe - Core functionality only
 context:
   name: mycc
-  version: ${{ env["SETUPTOOLS_SCM_PRETEND_VERSION"] or "dev" }}
+  version: ${{ env.get("MYCC_VERSION") }}
 
 package:
-  name: "${{ name }}"
+  name: "${{ name }}${{ '-full' if variant == 'full' else '' }}"
   version: "${{ version }}"
 
 source:
   # Use local source directory
-  path: ../
+  path: ..
 
 build:
   number: 0
   noarch: python
-  script:
-    - pip install . --no-deps --ignore-installed -vvv
+  script: |
+    pip install . --no-deps --ignore-installed -vvv
   python:
     entry_points:
       - mycc = mycc.cli:main
@@ -24,8 +23,8 @@ requirements:
   host:
     - python >=3.10
     - pip
-    - setuptools >=64
-    - setuptools-scm >=8
+    - hatchling
+    - hatch-vcs
   run:
     - python >=3.10
     - tyro >=0.8.0

@@ -5,9 +5,9 @@ from typing import Any
 from pathlib import Path
 from dataclasses import dataclass
 
+from mycc.core.logger import get_logger
 from mycc.modules.base import BaseModule
 from mycc.core.resources import ResourceAccessError, read_mcp_servers_json
-from mycc.core.logger import get_logger
 
 
 @dataclass

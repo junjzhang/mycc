@@ -126,7 +126,7 @@ pixi run format           # Code formatting
 
 ```bash
 # Build packages
-pixi run -e build build-all
+pixi run -e build build
 
 # Upload to conda repository
 pixi run upload
