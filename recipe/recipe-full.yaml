@@ -1,0 +1,87 @@
+# MYCC Full Recipe - All dependencies included
+context:
+  name: mycc-full
+  version: "0.0.2"
+
+package:
+  name: "${{ name }}"
+  version: "${{ version }}"
+
+source:
+  # Use local source directory
+  path: ../
+
+build:
+  number: 0
+  noarch: python
+  script:
+    # Install the Python package
+    - pip install . --no-deps --ignore-installed -vvv
+    # Create post-install script for npm dependencies
+    - mkdir -p $PREFIX/bin
+    - |
+      cat > $PREFIX/bin/mycc-install-deps << 'EOF'
+      #!/bin/bash
+      echo "Installing MYCC dependencies..."
+      npm install -g @anthropic-ai/claude-code || echo "Warning: Failed to install claude-code"
+      npm install -g ccstatusline || echo "Warning: Failed to install ccstatusline"
+      npm install -g tweakcc || echo "Warning: Failed to install tweakcc"
+      npm install -g ccusage || echo "Warning: Failed to install ccusage"
+      echo "MYCC dependencies installation completed!"
+      EOF
+    - chmod +x $PREFIX/bin/mycc-install-deps
+  python:
+    entry_points:
+      - mycc = mycc.cli:main
+
+requirements:
+  host:
+    - python >=3.10
+    - pip
+    - hatchling
+    - nodejs >=18
+  run:
+    - python >=3.10
+    - tyro >=0.8.0
+    - pydantic >=2.0.0
+    - colorama >=0.4.4
+    - pyyaml >=6.0
+    - nodejs >=18
+
+tests:
+  - script:
+      # Test MYCC functionality
+      - mycc --help
+      - mycc version
+      # Test that the dependency installer script exists
+      - ls -la $PREFIX/bin/mycc-install-deps
+      - echo "Run 'mycc-install-deps' after installation to install npm dependencies"
+  - python:
+      imports:
+        - mycc
+        - mycc.cli
+        - mycc.core
+        - mycc.modules
+        - mycc.utils
+
+about:
+  summary: A modular Claude Code configuration manager (full version)
+  description: |
+    MYCC is a modular configuration manager for Claude Code that helps you manage
+    commands, configurations, and MCP servers. This full version includes Node.js
+    and provides a convenient installer script for all external dependencies:
+    - Claude Code (@anthropic-ai/claude-code)
+    - ccstatusline (status line enhancement)
+    - TweakCC (Claude Code customization)
+    - ccusage (usage analysis and monitoring)
+    
+    After installing this package, run 'mycc-install-deps' to install npm dependencies.
+  license: MIT
+  license_file: LICENSE
+  homepage: https://github.com/junjzhang/mycc
+  repository: https://github.com/junjzhang/mycc.git
+  documentation: https://github.com/junjzhang/mycc#readme
+
+extra:
+  recipe-maintainers:
+    - junjzhang

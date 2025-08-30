@@ -1,8 +1,6 @@
-"""
-Allow running mycc as a module: python -m mycc
-"""
+"""Allow running mycc as a module."""
 
 from mycc.cli import main
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

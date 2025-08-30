@@ -1,3 +1,1 @@
-"""
-Utility modules for MYCC
-"""
+"""Utility modules for MY CC."""

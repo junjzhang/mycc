@@ -1,0 +1,62 @@
+# MYCC Basic Recipe - Core functionality only
+context:
+  name: mycc
+  version: "0.0.2"
+
+package:
+  name: "${{ name }}"
+  version: "${{ version }}"
+
+source:
+  # Use local source directory
+  path: ../
+
+build:
+  number: 0
+  noarch: python
+  script:
+    - pip install . --no-deps --ignore-installed -vvv
+  python:
+    entry_points:
+      - mycc = mycc.cli:main
+
+requirements:
+  host:
+    - python >=3.10
+    - pip
+    - hatchling
+  run:
+    - python >=3.10
+    - tyro >=0.8.0
+    - pydantic >=2.0.0
+    - colorama >=0.4.4
+    - pyyaml >=6.0
+
+tests:
+  - script:
+      - mycc --help
+      - mycc version
+  - python:
+      imports:
+        - mycc
+        - mycc.cli
+        - mycc.core
+        - mycc.modules
+        - mycc.utils
+
+about:
+  summary: A modular Claude Code configuration manager
+  description: |
+    MYCC is a modular configuration manager for Claude Code that helps you manage
+    commands, configurations, and MCP servers. This basic version includes core
+    functionality only - external dependencies (Claude Code, ccstatusline, TweakCC, 
+    ccusage) need to be installed separately.
+  license: MIT
+  license_file: LICENSE
+  homepage: https://github.com/junjzhang/mycc
+  repository: https://github.com/junjzhang/mycc.git
+  documentation: https://github.com/junjzhang/mycc#readme
+
+extra:
+  recipe-maintainers:
+    - junjzhang

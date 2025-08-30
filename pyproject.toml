@@ -4,7 +4,7 @@ requires = ["hatchling"]
 
 [project]
 name = "mycc"
-version = "0.0.1"
+version = "0.0.2"
 description = "A modular Claude Code configuration manager"
 authors = [{ name = "junjzhang", email = "junjzhang@example.com" }]
 readme = "README.md"

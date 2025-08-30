@@ -1,6 +1,6 @@
 [project]
 name = "mycc"
-version = "2.0.0"
+version = "0.0.2"
 description = "A modular Claude Code configuration manager"
 authors = ["junjzhang <junjzhang@example.com>"]
 channels = ["conda-forge"]
@@ -40,6 +40,17 @@ dev-test = """
 """
 test-clean = "rm -rf .test_claude .test_home"
 
+# Package building tasks  
+build-basic = "rattler-build build --recipe recipe/recipe.yaml --output-dir ./output"
+build-full = "rattler-build build --recipe recipe/recipe-full.yaml --output-dir ./output"
+build-all = "rattler-build build --recipe recipe/recipe.yaml --output-dir ./output && rattler-build build --recipe recipe/recipe-full.yaml --output-dir ./output"
+clean-build = "rm -rf ./output"
+
+# Package upload tasks
+upload = "python scripts/upload.py --type all"
+upload-basic = "python scripts/upload.py --type basic"  
+upload-full = "python scripts/upload.py --type full"
+
 [dependencies]
 python = ">=3.10"
 tyro = ">=0.8.0"
@@ -48,9 +59,16 @@ colorama = ">=0.4.4"
 pyyaml = ">=6.0"
 
 [feature.dev.dependencies]
+pip = "*"
 pytest = ">=7.0.0"
 ruff = ">=0.1.0"
+pre-commit = ">=4.3.0,<5"
+tqdm = ">=4.67.1,<5"
+
+[feature.build.dependencies]
+rattler-build = "*"
 
 [environments]
 default = []
 dev = { features = ["dev"] }
+build = { features = ["build"] }

@@ -1,3 +1,1 @@
-"""
-Core modules for MYCC
-"""
+"""Core modules for MY CC."""
