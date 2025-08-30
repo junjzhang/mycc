@@ -6,8 +6,8 @@ and packaged environments.
 """
 
 import json
+from typing import Any, Optional
 from pathlib import Path
-from typing import Union, Any, Optional
 from importlib import resources
 
 try:
@@ -22,8 +22,7 @@ class ResourceAccessError(Exception):
 
 
 def get_data_directory(package_name: str, fallback_path: Optional[Path] = None) -> Path:
-    """
-    Get a data directory using importlib.resources with fallback.
+    """Get a data directory using importlib.resources with fallback.
     
     Args:
         package_name: The package name (e.g., 'mycc.data.commands')
@@ -93,8 +92,7 @@ def get_data_directory(package_name: str, fallback_path: Optional[Path] = None) 
 
 
 def get_data_file(package_name: str, filename: str, fallback_path: Optional[Path] = None) -> Path:
-    """
-    Get a specific data file using importlib.resources with fallback.
+    """Get a specific data file using importlib.resources with fallback.
     
     Args:
         package_name: The package name (e.g., 'mycc.data.config')
@@ -140,8 +138,7 @@ def get_data_file(package_name: str, filename: str, fallback_path: Optional[Path
 
 
 def read_json_resource(package_name: str, filename: str, fallback_path: Optional[Path] = None) -> Any:
-    """
-    Read a JSON file from package resources.
+    """Read a JSON file from package resources.
     
     Args:
         package_name: The package name
@@ -175,8 +172,7 @@ def read_json_resource(package_name: str, filename: str, fallback_path: Optional
 
 
 def read_toml_resource(package_name: str, filename: str, fallback_path: Optional[Path] = None) -> Any:
-    """
-    Read a TOML file from package resources.
+    """Read a TOML file from package resources.
     
     Args:
         package_name: The package name
@@ -210,8 +206,7 @@ def read_toml_resource(package_name: str, filename: str, fallback_path: Optional
 
 
 def list_resource_files(package_name: str, pattern: str = "*", fallback_path: Optional[Path] = None) -> list[Path]:
-    """
-    List files in a resource directory matching a pattern.
+    """List files in a resource directory matching a pattern.
     
     Args:
         package_name: The package name
@@ -230,8 +225,7 @@ def list_resource_files(package_name: str, pattern: str = "*", fallback_path: Op
 
 
 class _ResourcePathWrapper:
-    """
-    Wrapper for importlib.resources that provides Path-like interface.
+    """Wrapper for importlib.resources that provides Path-like interface.
     
     This handles cases like MultiplexedPath where we can't get a direct filesystem path
     but can still access the resources.
@@ -295,8 +289,7 @@ class _ResourcePathWrapper:
 
 
 def _create_temp_path_reference(resource):
-    """
-    Create a temporary path reference for newer importlib.resources.
+    """Create a temporary path reference for newer importlib.resources.
     
     This is a placeholder for cases where we need Path-like access
     to resources that only provide context manager access.

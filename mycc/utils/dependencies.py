@@ -4,7 +4,7 @@ import shutil
 import subprocess
 from typing import NamedTuple
 
-from colorama import Fore, Style
+from mycc.core.logger import get_logger
 
 
 class DependencyInfo(NamedTuple):
@@ -54,6 +54,7 @@ class DependencyChecker:
 
     def __init__(self, test_mode: bool = False):
         self.test_mode = test_mode
+        self.logger = get_logger()
 
     def check_command_exists(self, command: str) -> bool:
         """Check if a command exists in the system."""
@@ -131,44 +132,44 @@ class DependencyChecker:
     def install_npm_package(self, package: str, display_name: str) -> bool:
         """Install an npm package globally."""
         if self.test_mode:
-            print(f"  {Fore.CYAN}[TEST MODE] Simulating installation of {display_name}...{Style.RESET_ALL}")
+            self.logger.info(f"[TEST MODE] Simulating installation of {display_name}...")
             return True
 
         try:
-            print(f"  📥 Installing {display_name}...")
+            self.logger.info(f"📥 Installing {display_name}...")
             result = subprocess.run(["npm", "install", "-g", package], capture_output=True, text=True, check=True)
 
-            print(f"  {Fore.GREEN}✓ Successfully installed {display_name}{Style.RESET_ALL}")
+            self.logger.success(f"Successfully installed {display_name}")
             return True
 
         except subprocess.CalledProcessError as e:
-            print(f"  {Fore.RED}❌ Failed to install {display_name}{Style.RESET_ALL}")
-            print(f"  {Fore.YELLOW}Error: {e.stderr.strip() if e.stderr else 'Unknown error'}{Style.RESET_ALL}")
+            self.logger.failure(f"Failed to install {display_name}")
+            self.logger.warning(f"Error: {e.stderr.strip() if e.stderr else 'Unknown error'}")
 
             # Provide manual installation guide
-            print(f"  {Fore.CYAN}💡 Manual installation:{Style.RESET_ALL}")
-            print(f"    npm install -g {package}")
+            self.logger.info(f"💡 Manual installation:")
+            self.logger.info(f"    npm install -g {package}")
             if "permission" in str(e).lower():
-                print(f"  {Fore.YELLOW}⚠️  If you get permission errors, try:{Style.RESET_ALL}")
-                print(f"    sudo npm install -g {package}")
+                self.logger.warning(f"⚠️  If you get permission errors, try:")
+                self.logger.info(f"    sudo npm install -g {package}")
 
             return False
         except FileNotFoundError:
-            print(f"  {Fore.RED}❌ npm not found. Please install Node.js and npm first.{Style.RESET_ALL}")
+            self.logger.failure(f"npm not found. Please install Node.js and npm first.")
             return False
 
     def check_all_dependencies(self) -> dict[str, bool]:
         """Check status of all dependencies."""
-        print(f"{Fore.CYAN}🔍 Checking dependencies...{Style.RESET_ALL}")
+        self.logger.info("🔍 Checking dependencies...")
 
         status = {}
 
         # Check Node.js/npm first
         node_ok, node_info = self.check_node_npm()
         if node_ok:
-            print(f"  {Fore.GREEN}✓ Node.js found ({node_info}){Style.RESET_ALL}")
+            self.logger.success(f"Node.js found ({node_info})")
         else:
-            print(f"  {Fore.RED}✗ {node_info}{Style.RESET_ALL}")
+            self.logger.failure(node_info)
             return {"node": False}
 
         # Check individual dependencies
@@ -186,27 +187,22 @@ class DependencyChecker:
 
             status[key] = is_installed
 
-            if is_installed:
-                print(f"  {Fore.GREEN}✓ {dep.name} found{Style.RESET_ALL}")
-            else:
-                status_icon = "✗" if dep.required else "○"
-                color = Fore.RED if dep.required else Fore.YELLOW
-                req_text = "" if dep.required else " (optional)"
-                print(f"  {color}{status_icon} {dep.name} not found{req_text}{Style.RESET_ALL}")
+            # Use the logger's dependency_check method for consistent formatting
+            self.logger.dependency_check(dep.name, is_installed, dep.required)
 
         return status
 
     def ask_install_permission(self, missing_deps: list[str]) -> bool:
         """Ask user permission to install missing dependencies."""
         if self.test_mode:
-            print(f"{Fore.CYAN}[TEST MODE] Auto-approving dependency installation{Style.RESET_ALL}")
+            self.logger.info("[TEST MODE] Auto-approving dependency installation")
             return True
 
-        print(f"\n{Fore.YELLOW}📦 Missing dependencies detected:{Style.RESET_ALL}")
+        self.logger.warning("📦 Missing dependencies detected:")
         for dep_key in missing_deps:
             dep = self.DEPENDENCIES[dep_key]
             req_text = " (required)" if dep.required else " (optional)"
-            print(f"  - {dep.name}{req_text}")
+            self.logger.info(f"  - {dep.name}{req_text}")
 
         while True:
             try:
@@ -216,9 +212,9 @@ class DependencyChecker:
                 elif answer in ["n", "no"]:
                     return False
                 else:
-                    print("Please answer 'y' or 'n'")
+                    self.logger.info("Please answer 'y' or 'n'")
             except (KeyboardInterrupt, EOFError):
-                print(f"\n{Fore.YELLOW}Installation cancelled by user{Style.RESET_ALL}")
+                self.logger.warning("Installation cancelled by user")
                 return False
 
     def install_missing_dependencies(self, missing_deps: list[str]) -> bool:
@@ -228,7 +224,7 @@ class DependencyChecker:
         for dep_key in missing_deps:
             dep = self.DEPENDENCIES[dep_key]
 
-            print(f"\n{Fore.CYAN}📦 Installing {dep.name}...{Style.RESET_ALL}")
+            self.logger.info(f"📦 Installing {dep.name}...")
 
             if dep_key == "claude_code":
                 install_success = self.install_npm_package(dep.package, dep.name)
@@ -244,9 +240,9 @@ class DependencyChecker:
             if not install_success:
                 if dep.required:
                     success = False
-                    print(f"  {Fore.RED}❌ Failed to install required dependency: {dep.name}{Style.RESET_ALL}")
+                    self.logger.failure(f"Failed to install required dependency: {dep.name}")
                 else:
-                    print(f"  {Fore.YELLOW}⚠️  Optional dependency {dep.name} failed to install{Style.RESET_ALL}")
+                    self.logger.warning(f"Optional dependency {dep.name} failed to install")
 
         return success
 
@@ -257,8 +253,8 @@ class DependencyChecker:
 
         # Check for Node.js failure
         if "node" in status and not status["node"]:
-            print(f"\n{Fore.RED}❌ Node.js/npm is required but not found.{Style.RESET_ALL}")
-            print(f"{Fore.CYAN}Please install Node.js from: https://nodejs.org/{Style.RESET_ALL}")
+            self.logger.failure("Node.js/npm is required but not found.")
+            self.logger.info("Please install Node.js from: https://nodejs.org/")
             return False
 
         # Find missing dependencies
@@ -270,7 +266,7 @@ class DependencyChecker:
         ]
 
         if not missing_required and not missing_optional:
-            print(f"\n{Fore.GREEN}✅ All dependencies are already installed!{Style.RESET_ALL}")
+            self.logger.success("All dependencies are already installed!")
             return True
 
         missing_deps = missing_required + missing_optional
@@ -279,30 +275,28 @@ class DependencyChecker:
         if auto_install:
             if not self.ask_install_permission(missing_deps):
                 if missing_required:
-                    print(
-                        f"\n{Fore.RED}❌ Required dependencies are missing. MYCC may not work correctly.{Style.RESET_ALL}"
-                    )
+                    self.logger.failure("Required dependencies are missing. MYCC may not work correctly.")
                     return False
                 else:
-                    print(f"\n{Fore.YELLOW}⚠️  Some optional features may not be available.{Style.RESET_ALL}")
+                    self.logger.warning("Some optional features may not be available.")
                     return True
 
             # Install missing dependencies
             install_success = self.install_missing_dependencies(missing_deps)
 
             if install_success:
-                print(f"\n{Fore.GREEN}✅ All dependencies installed successfully!{Style.RESET_ALL}")
+                self.logger.success("All dependencies installed successfully!")
                 return True
             else:
-                print(f"\n{Fore.RED}❌ Some dependencies failed to install.{Style.RESET_ALL}")
+                self.logger.failure("Some dependencies failed to install.")
                 return False
         else:
             # Just report missing dependencies
             if missing_required:
-                print(f"\n{Fore.YELLOW}⚠️  Required dependencies are missing:{Style.RESET_ALL}")
+                self.logger.warning("Required dependencies are missing:")
                 for dep_key in missing_required:
                     dep = self.DEPENDENCIES[dep_key]
-                    print(f"  - {dep.name}: {dep.install_command}")
+                    self.logger.info(f"  - {dep.name}: {dep.install_command}")
                 return False
 
             return True

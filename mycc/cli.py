@@ -6,14 +6,11 @@ from enum import Enum
 from pathlib import Path
 
 import tyro
-from colorama import Fore, Style, init
 from pydantic import Field, BaseModel
 
 from mycc import __version__
+from mycc.core.logger import get_logger, set_test_mode
 from mycc.core.manager import ConfigManager
-
-# Initialize colorama for cross-platform colored output
-init()
 
 # Get project root directory
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -40,37 +37,37 @@ class Install(BaseModel):
     no_auto_deps: bool = Field(default=False, description="Don't automatically install missing dependencies")
 
     def run(self):
+        # Set up logger with test mode
+        logger = get_logger()
+        if self.test_mode:
+            set_test_mode(True)
+            
         manager = ConfigManager(PROJECT_ROOT, self.test_mode, self.test_dir)
 
         if self.test_mode:
-            print(f"{Fore.CYAN}[TEST MODE] Using fake directories for safe testing{Style.RESET_ALL}")
+            logger.info("Using fake directories for safe testing")
 
         # Check dependencies before installation (unless skipped)
         if not self.skip_deps:
             deps_ok = manager.ensure_dependencies(auto_install=not self.no_auto_deps)
             if not deps_ok and not self.test_mode:
-                print(
-                    f"{Fore.YELLOW}⚠️  Some dependencies are missing. Installation may not work correctly.{Style.RESET_ALL}"
-                )
+                logger.warning("Some dependencies are missing. Installation may not work correctly.")
 
         if self.all:
             modules = [ModuleType.commands, ModuleType.configs, ModuleType.mcp]
-            print(f"{Fore.GREEN}Installing all modules (commands, configs, mcp)...{Style.RESET_ALL}")
+            logger.info("Installing all modules (commands, configs, mcp)...")
         elif self.modules:
             modules = self.modules
         else:
-            print(f"{Fore.YELLOW}No modules specified. Use --all to install everything.{Style.RESET_ALL}")
+            logger.warning("No modules specified. Use --all to install everything.")
             return
 
         for module in modules:
             try:
                 success = manager.install_module(module.value)
-                if success:
-                    print(f"{Fore.GREEN}✓ Installed {module.value} module{Style.RESET_ALL}")
-                else:
-                    print(f"{Fore.RED}✗ Failed to install {module.value} module{Style.RESET_ALL}")
+                logger.install_feedback(module.value, success)
             except Exception as e:
-                print(f"{Fore.RED}✗ Error installing {module.value}: {e}{Style.RESET_ALL}")
+                logger.install_feedback(module.value, False, str(e))
 
 
 class Uninstall(BaseModel):
@@ -84,29 +81,34 @@ class Uninstall(BaseModel):
     test_dir: Path | None = Field(default=None, description="Test directory path (default: current directory)")
 
     def run(self):
+        # Set up logger with test mode
+        logger = get_logger()
+        if self.test_mode:
+            set_test_mode(True)
+            
         manager = ConfigManager(PROJECT_ROOT, self.test_mode, self.test_dir)
 
         if self.test_mode:
-            print(f"{Fore.CYAN}[TEST MODE] Using fake directories for safe testing{Style.RESET_ALL}")
+            logger.info("Using fake directories for safe testing")
 
         if self.all:
             modules = [ModuleType.commands, ModuleType.configs, ModuleType.mcp]
-            print(f"{Fore.YELLOW}Uninstalling all modules (commands, configs, mcp)...{Style.RESET_ALL}")
+            logger.warning("Uninstalling all modules (commands, configs, mcp)...")
         elif self.modules:
             modules = self.modules
         else:
-            print(f"{Fore.YELLOW}No modules specified. Use --all to uninstall everything.{Style.RESET_ALL}")
+            logger.warning("No modules specified. Use --all to uninstall everything.")
             return
 
         for module in modules:
             try:
                 success = manager.uninstall_module(module.value)
                 if success:
-                    print(f"{Fore.GREEN}✓ Uninstalled {module.value} module{Style.RESET_ALL}")
+                    logger.success(f"Uninstalled {module.value} module")
                 else:
-                    print(f"{Fore.RED}✗ Failed to uninstall {module.value} module{Style.RESET_ALL}")
+                    logger.failure(f"Failed to uninstall {module.value} module")
             except Exception as e:
-                print(f"{Fore.RED}✗ Error uninstalling {module.value}: {e}{Style.RESET_ALL}")
+                logger.failure(f"Error uninstalling {module.value}: {e}")
 
 
 class Link(BaseModel):
@@ -116,19 +118,24 @@ class Link(BaseModel):
     test_dir: Path | None = Field(default=None, description="Test directory path (default: current directory)")
 
     def run(self):
+        # Set up logger with test mode  
+        logger = get_logger()
+        if self.test_mode:
+            set_test_mode(True)
+            
         manager = ConfigManager(PROJECT_ROOT, self.test_mode, self.test_dir)
 
         if self.test_mode:
-            print(f"{Fore.CYAN}[TEST MODE] Using fake directories for safe testing{Style.RESET_ALL}")
+            logger.info("Using fake directories for safe testing")
 
         try:
             success = manager.link_configs()
             if success:
-                print(f"{Fore.GREEN}✓ Configuration files linked successfully{Style.RESET_ALL}")
+                logger.success("Configuration files linked successfully")
             else:
-                print(f"{Fore.RED}✗ Failed to link configuration files{Style.RESET_ALL}")
+                logger.failure("Failed to link configuration files")
         except Exception as e:
-            print(f"{Fore.RED}✗ Error linking configs: {e}{Style.RESET_ALL}")
+            logger.failure(f"Error linking configs: {e}")
 
 
 class Status(BaseModel):
@@ -138,23 +145,27 @@ class Status(BaseModel):
     test_dir: Path | None = Field(default=None, description="Test directory path (default: current directory)")
 
     def run(self):
+        # Set up logger with test mode
+        logger = get_logger()
+        if self.test_mode:
+            set_test_mode(True)
+            
         manager = ConfigManager(PROJECT_ROOT, self.test_mode, self.test_dir)
 
         if manager.test_mode:
-            print(f"{Fore.CYAN}[TEST MODE] Using fake directories{Style.RESET_ALL}")
+            logger.info("Using fake directories")
 
-        print(f"{Fore.CYAN}MYCC Status{Style.RESET_ALL}")
-        print("=" * 40)
+        logger.section("MYCC Status")
 
         status_info = manager.get_status()
 
         for module, info in status_info.items():
-            status_icon = "✓" if info["installed"] else "✗"
-            status_color = Fore.GREEN if info["installed"] else Fore.RED
-
-            print(f"{status_color}{status_icon} {module:<12} {info['description']}{Style.RESET_ALL}")
-            if info["installed"] and "path" in info:
-                print(f"  {'Path:':<10} {info['path']}")
+            if info["installed"]:
+                logger.success(f"{module:<12} {info['description']}")
+                if "path" in info:
+                    logger.info(f"  Path: {info['path']}")
+            else:
+                logger.failure(f"{module:<12} {info['description']}")
 
 
 class List(BaseModel):
@@ -164,27 +175,32 @@ class List(BaseModel):
     test_dir: Path | None = Field(default=None, description="Test directory path (default: current directory)")
 
     def run(self):
+        # Set up logger with test mode
+        logger = get_logger()
+        if self.test_mode:
+            set_test_mode(True)
+            
         manager = ConfigManager(PROJECT_ROOT, self.test_mode, self.test_dir)
 
         if self.test_mode:
-            print(f"{Fore.CYAN}[TEST MODE] Listing modules{Style.RESET_ALL}")
+            logger.info("Listing modules")
 
-        print(f"{Fore.CYAN}Available Modules{Style.RESET_ALL}")
-        print("=" * 40)
+        logger.section("Available Modules")
 
         modules = manager.get_available_modules()
 
         for module, info in modules.items():
-            print(f"{Fore.GREEN}{module:<12}{Style.RESET_ALL} {info['description']}")
+            logger.success(f"{module:<12} {info['description']}")
             if "files" in info:
-                print(f"  {'Files:':<10} {len(info['files'])} items")
+                logger.info(f"  Files: {len(info['files'])} items")
 
 
 class Version(BaseModel):
     """Show version information."""
 
     def run(self):
-        print(f"MYCC version {__version__}")
+        logger = get_logger()
+        logger.info(f"MYCC version {__version__}")
 
 
 class Deps(BaseModel):
@@ -194,17 +210,22 @@ class Deps(BaseModel):
     install: bool = Field(default=False, description="Install missing dependencies")
 
     def run(self):
+        # Set up logger with test mode
+        logger = get_logger()
+        if self.test_mode:
+            set_test_mode(True)
+            
         manager = ConfigManager(PROJECT_ROOT, self.test_mode)
 
         if self.test_mode:
-            print(f"{Fore.CYAN}[TEST MODE] Checking dependencies in test mode{Style.RESET_ALL}")
+            logger.info("Checking dependencies in test mode")
 
         if self.install:
             success = manager.ensure_dependencies(auto_install=True)
             if success:
-                print(f"\n{Fore.GREEN}✅ All dependencies are ready!{Style.RESET_ALL}")
+                logger.success("All dependencies are ready!")
             else:
-                print(f"\n{Fore.RED}❌ Some dependencies failed to install.{Style.RESET_ALL}")
+                logger.failure("Some dependencies failed to install.")
                 sys.exit(1)
         else:
             # Just check and report status
@@ -220,10 +241,12 @@ def main():
         )
         args.run()
     except KeyboardInterrupt:
-        print(f"\n{Fore.YELLOW}Operation cancelled by user{Style.RESET_ALL}")
+        logger = get_logger()
+        logger.warning("Operation cancelled by user")
         sys.exit(1)
     except Exception as e:
-        print(f"{Fore.RED}Unexpected error: {e}{Style.RESET_ALL}")
+        logger = get_logger()
+        logger.error(f"Unexpected error: {e}")
         sys.exit(1)
 
 

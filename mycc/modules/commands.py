@@ -3,7 +3,8 @@ import shutil
 from pathlib import Path
 
 from mycc.modules.base import BaseModule
-from mycc.core.resources import get_commands_directory, list_command_files, ResourceAccessError
+from mycc.core.resources import ResourceAccessError, list_command_files, get_commands_directory
+from mycc.core.logger import get_logger
 
 
 class CommandsModule(BaseModule):
@@ -12,6 +13,7 @@ class CommandsModule(BaseModule):
     def __init__(self, project_root: Path, target_root: Path, test_mode: bool = False):
         super().__init__(project_root, target_root, test_mode)
         self.target_dir = self.target_root / "commands"
+        self.logger = get_logger()
 
     def _get_commands_path(self) -> Path:
         """Get the path to commands data directory."""
@@ -34,7 +36,7 @@ class CommandsModule(BaseModule):
             # Use unified resource access to get command files
             command_files = list_command_files()
             if not command_files:
-                print("No command files found in package resources")
+                self.logger.warning("No command files found in package resources")
                 return False
 
             # Ensure target directory exists
@@ -53,21 +55,21 @@ class CommandsModule(BaseModule):
                     else:
                         # Regular Path object - use standard copy
                         shutil.copy2(cmd_file, target_file)
-                    print(f"  + {cmd_file.name}")
+                    self.logger.success(f"{cmd_file.name}")
                     copied_count += 1
                 except Exception as e:
-                    print(f"  ! Failed to copy {cmd_file.name}: {e}")
+                    self.logger.failure(f"Failed to copy {cmd_file.name}: {e}")
                     continue
 
             if copied_count > 0:
-                print(f"Installed {copied_count} commands to {self.target_dir}")
+                self.logger.success(f"Installed {copied_count} commands to {self.target_dir}")
                 return True
             else:
-                print("Failed to install any command files")
+                self.logger.failure("Failed to install any command files")
                 return False
 
         except Exception as e:
-            print(f"Error installing commands: {e}")
+            self.logger.error(f"Error installing commands: {e}")
             return False
 
     def uninstall(self) -> bool:
@@ -88,14 +90,14 @@ class CommandsModule(BaseModule):
             for cmd_file in self.target_dir.glob("*.md"):
                 if cmd_file.name in source_files:
                     cmd_file.unlink()
-                    print(f"  - {cmd_file.name}")
+                    self.logger.success(f"Removed {cmd_file.name}")
                     removed_count += 1
 
-            print(f"Removed {removed_count} commands from {self.target_dir}")
+            self.logger.success(f"Removed {removed_count} commands from {self.target_dir}")
             return True
 
         except Exception as e:
-            print(f"Error uninstalling commands: {e}")
+            self.logger.error(f"Error uninstalling commands: {e}")
             return False
 
     def is_installed(self) -> bool:

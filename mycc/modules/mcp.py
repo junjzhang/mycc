@@ -5,10 +5,9 @@ from typing import Any
 from pathlib import Path
 from dataclasses import dataclass
 
-from colorama import Fore, Style
-
 from mycc.modules.base import BaseModule
-from mycc.core.resources import read_mcp_servers_json, ResourceAccessError
+from mycc.core.resources import ResourceAccessError, read_mcp_servers_json
+from mycc.core.logger import get_logger
 
 
 @dataclass
@@ -28,6 +27,7 @@ class MCPModule(BaseModule):
     def __init__(self, project_root: Path, target_root: Path, test_mode: bool = False):
         super().__init__(project_root, target_root, test_mode)
         self.servers: dict[str, MCPServerInfo] = self._load_servers()
+        self.logger = get_logger()
 
     def _load_servers(self) -> dict[str, MCPServerInfo]:
         """Load MCP servers from packaged JSON, with sensible defaults."""
@@ -81,27 +81,27 @@ class MCPModule(BaseModule):
                     success = False
 
             if installed_count > 0:
-                print(f"Installed {installed_count} MCP servers")
+                self.logger.success(f"Installed {installed_count} MCP servers")
 
             return success
 
         except Exception as e:
-            print(f"Error installing MCP servers: {e}")
+            self.logger.error(f"Error installing MCP servers: {e}")
             return False
 
     def _install_mcp_server(self, server_name: str, server_info: MCPServerInfo) -> bool:
         """Install a single MCP server."""
         try:
             if self.test_mode:
-                print(f"  {Fore.CYAN}[TEST MODE] Simulating MCP server installation: {server_name}{Style.RESET_ALL}")
+                self.logger.info(f"[TEST MODE] Simulating MCP server installation: {server_name}")
                 return True
 
             # Check if already installed
             if self._is_server_installed(server_name):
-                print(f"  ○ {server_name} already installed")
+                self.logger.info(f"○ {server_name} already installed")
                 return True
 
-            print(f"  📦 Installing MCP server: {server_name}")
+            self.logger.info(f"📦 Installing MCP server: {server_name}")
 
             # Execute claude mcp add command
             scope = server_info.scope or "user"
@@ -109,19 +109,19 @@ class MCPModule(BaseModule):
 
             subprocess.run(cmd, capture_output=True, text=True, check=True)
 
-            print(f"  {Fore.GREEN}✓ Successfully installed {server_name}{Style.RESET_ALL}")
+            self.logger.success(f"Successfully installed {server_name}")
             return True
 
         except subprocess.CalledProcessError as e:
-            print(f"  {Fore.RED}❌ Failed to install {server_name}{Style.RESET_ALL}")
+            self.logger.failure(f"Failed to install {server_name}")
             if e.stderr:
-                print(f"  {Fore.YELLOW}Error: {e.stderr.strip()}{Style.RESET_ALL}")
+                self.logger.warning(f"Error: {e.stderr.strip()}")
             return False
         except FileNotFoundError:
-            print(f"  {Fore.RED}❌ Claude Code not found. Please install Claude Code first.{Style.RESET_ALL}")
+            self.logger.failure(f"Claude Code not found. Please install Claude Code first.")
             return False
         except Exception as e:
-            print(f"  {Fore.RED}❌ Unexpected error installing {server_name}: {e}{Style.RESET_ALL}")
+            self.logger.failure(f"Unexpected error installing {server_name}: {e}")
             return False
 
     def uninstall(self) -> bool:
@@ -137,46 +137,46 @@ class MCPModule(BaseModule):
                     success = False
 
             if removed_count > 0:
-                print(f"Removed {removed_count} MCP servers")
+                self.logger.success(f"Removed {removed_count} MCP servers")
 
             return success
 
         except Exception as e:
-            print(f"Error uninstalling MCP servers: {e}")
+            self.logger.error(f"Error uninstalling MCP servers: {e}")
             return False
 
     def _uninstall_mcp_server(self, server_name: str) -> bool:
         """Uninstall a single MCP server."""
         try:
             if self.test_mode:
-                print(f"  {Fore.CYAN}[TEST MODE] Simulating MCP server removal: {server_name}{Style.RESET_ALL}")
+                self.logger.info(f"[TEST MODE] Simulating MCP server removal: {server_name}")
                 return True
 
             # Check if installed
             if not self._is_server_installed(server_name):
-                print(f"  ○ {server_name} not installed")
+                self.logger.info(f"○ {server_name} not installed")
                 return True
 
-            print(f"  🗑️  Removing MCP server: {server_name}")
+            self.logger.info(f"🗑️  Removing MCP server: {server_name}")
 
             # Execute claude mcp remove command
             subprocess.run(
                 ["claude", "mcp", "remove", server_name, "--scope", "user"], capture_output=True, text=True, check=True
             )
 
-            print(f"  {Fore.GREEN}✓ Successfully removed {server_name}{Style.RESET_ALL}")
+            self.logger.success(f"Successfully removed {server_name}")
             return True
 
         except subprocess.CalledProcessError as e:
-            print(f"  {Fore.RED}❌ Failed to remove {server_name}{Style.RESET_ALL}")
+            self.logger.failure(f"Failed to remove {server_name}")
             if e.stderr:
-                print(f"  {Fore.YELLOW}Error: {e.stderr.strip()}{Style.RESET_ALL}")
+                self.logger.warning(f"Error: {e.stderr.strip()}")
             return False
         except FileNotFoundError:
-            print(f"  {Fore.RED}❌ Claude Code not found.{Style.RESET_ALL}")
+            self.logger.failure(f"Claude Code not found.")
             return False
         except Exception as e:
-            print(f"  {Fore.RED}❌ Unexpected error removing {server_name}: {e}{Style.RESET_ALL}")
+            self.logger.failure(f"Unexpected error removing {server_name}: {e}")
             return False
 
     def is_installed(self) -> bool:

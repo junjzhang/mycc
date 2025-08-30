@@ -1,7 +1,7 @@
 """Configuration Registry - Manages configuration entries and installation rules."""
 
 import threading
-from typing import Optional, Dict, Any, Set
+from typing import Any, Set, Dict, Optional
 from pathlib import Path
 from dataclasses import dataclass
 

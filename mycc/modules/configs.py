@@ -3,8 +3,9 @@
 from pathlib import Path
 
 from mycc.modules.base import BaseModule
-from mycc.modules.config_registry import ConfigRegistry, ConfigEntry, ConfigRegistryError
-from mycc.core.resources import get_config_directory, ResourceAccessError
+from mycc.core.resources import ResourceAccessError, get_config_directory
+from mycc.modules.config_registry import ConfigEntry, ConfigRegistry, ConfigRegistryError
+from mycc.core.logger import get_logger
 
 
 class ConfigsModule(BaseModule):
@@ -15,6 +16,7 @@ class ConfigsModule(BaseModule):
         self.target_dir = target_root
         self.home_dir = home_dir or (Path.cwd() / ".test_home" if test_mode else Path.home())
         self.registry = ConfigRegistry()
+        self.logger = get_logger()
 
     def _get_config_path(self) -> Path:
         """Get the path to config data directory."""
@@ -36,7 +38,7 @@ class ConfigsModule(BaseModule):
         try:
             config_base_dir = self._get_config_path()
         except ResourceAccessError as e:
-            print(f"Error accessing config directory: {e}")
+            self.logger.error(f"Error accessing config directory: {e}")
             return False
 
         try:
@@ -47,16 +49,16 @@ class ConfigsModule(BaseModule):
                 try:
                     success &= self._install_config_entry(entry, config_base_dir)
                 except Exception as e:
-                    print(f"Error installing {name}: {e}")
+                    self.logger.error(f"Error installing {name}: {e}")
                     success = False
 
             return success
 
         except ConfigRegistryError as e:
-            print(f"Configuration registry error: {e}")
+            self.logger.error(f"Configuration registry error: {e}")
             return False
         except Exception as e:
-            print(f"Error installing configs: {e}")
+            self.logger.error(f"Error installing configs: {e}")
             return False
 
     def _install_config_entry(self, entry: ConfigEntry, config_base_dir: Path) -> bool:
@@ -66,10 +68,10 @@ class ConfigsModule(BaseModule):
             source = entry.get_source_path(config_base_dir)
             if not source.exists():
                 if entry.required:
-                    print(f"  Warning: Required config file not found: {source}")
+                    self.logger.warning(f"Required config file not found: {source}")
                     return False
                 else:
-                    print(f"  Skipping optional config: {source}")
+                    self.logger.info(f"Skipping optional config: {source}")
                     return True
 
             target = entry.get_target_path(self.home_dir, self.target_dir)
@@ -88,18 +90,18 @@ class ConfigsModule(BaseModule):
                     if entry.backup_existing:
                         backup = target.with_suffix(target.suffix + ".backup")
                         target.rename(backup)
-                        print(f"  Backed up existing {entry.name} to {backup}")
+                        self.logger.info(f"Backed up existing {entry.name} to {backup}")
                     else:
                         # Remove without backup
                         target.unlink()
 
             # Create new symlink
             target.symlink_to(source.resolve())
-            print(f"  + Linked {entry.name}")
+            self.logger.success(f"Linked {entry.name}")
             return True
 
         except Exception as e:
-            print(f"Error installing {entry.name}: {e}")
+            self.logger.error(f"Error installing {entry.name}: {e}")
             return False
 
     def uninstall(self) -> bool:
@@ -113,18 +115,18 @@ class ConfigsModule(BaseModule):
                     target = entry.get_target_path(self.home_dir, self.target_dir)
                     if target.is_symlink():
                         target.unlink()
-                        print(f"  - Removed {entry.name} link")
+                        self.logger.success(f"Removed {entry.name} link")
                 except Exception as e:
-                    print(f"Error uninstalling {entry.name}: {e}")
+                    self.logger.error(f"Error uninstalling {entry.name}: {e}")
                     success = False
 
             return success
 
         except ConfigRegistryError as e:
-            print(f"Configuration registry error: {e}")
+            self.logger.error(f"Configuration registry error: {e}")
             return False
         except Exception as e:
-            print(f"Error uninstalling configs: {e}")
+            self.logger.error(f"Error uninstalling configs: {e}")
             return False
 
     def is_installed(self) -> bool:

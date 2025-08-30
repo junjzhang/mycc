@@ -9,6 +9,7 @@ from mycc.modules.mcp import MCPModule
 from mycc.modules.configs import ConfigsModule
 from mycc.modules.commands import CommandsModule
 from mycc.utils.dependencies import DependencyChecker
+from mycc.core.logger import get_logger
 
 
 class ConfigManager:
@@ -17,6 +18,7 @@ class ConfigManager:
     def __init__(self, project_root: Path, test_mode: bool = False, test_dir: Path | None = None):
         self.project_root = Path(project_root)
         self.test_mode = test_mode or bool(os.getenv("MYCC_TEST_MODE"))
+        self.logger = get_logger()
 
         if self.test_mode:
             # Use test directories
@@ -70,8 +72,8 @@ class ConfigManager:
             return self.modules[module_name].install()
         except Exception as e:
             import traceback
-            print(f"Error installing {module_name}: {e}")
-            print("Full traceback:")
+            self.logger.error(f"Error installing {module_name}: {e}")
+            self.logger.error("Full traceback:")
             traceback.print_exc()
             return False
 
@@ -83,7 +85,7 @@ class ConfigManager:
         try:
             return self.modules[module_name].uninstall()
         except Exception as e:
-            print(f"Error uninstalling {module_name}: {e}")
+            self.logger.error(f"Error uninstalling {module_name}: {e}")
             return False
 
     def link_configs(self) -> bool:
@@ -95,7 +97,7 @@ class ConfigManager:
         try:
             return self.modules["configs"].install()
         except Exception as e:
-            print(f"Error linking configs: {e}")
+            self.logger.error(f"Error linking configs: {e}")
             return False
 
     def _create_symlink(self, source: Path, target: Path):
