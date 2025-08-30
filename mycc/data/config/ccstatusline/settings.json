@@ -5,10 +5,10 @@
       {
         "id": "1",
         "type": "model",
-        "color": "cyan"
+        "color": "brightRed"
       },
       {
-        "id": "2",
+        "id": "a79b5635-0e6d-4242-bdf4-7e7b96c9ad71",
         "type": "separator"
       },
       {
@@ -17,7 +17,7 @@
         "color": "brightBlack"
       },
       {
-        "id": "4",
+        "id": "a2cb45df-acb5-4fc3-8e42-217bd17703ff",
         "type": "separator"
       },
       {
@@ -25,7 +25,7 @@
         "type": "context-percentage-usable"
       },
       {
-        "id": "0e69b4c4-c81f-499e-a69b-30123eaf822d",
+        "id": "206854f8-f223-4de6-8520-aa034f0634ea",
         "type": "separator"
       },
       {
@@ -34,7 +34,7 @@
         "color": "magenta"
       },
       {
-        "id": "6",
+        "id": "17ecfded-2825-40fc-a864-accd2e10eda6",
         "type": "separator"
       },
       {
@@ -47,14 +47,16 @@
       {
         "id": "6a3d345f-d9fa-4ac7-ae61-9fc1e7928c71",
         "type": "custom-command",
-        "commandPath": "ccusage statusline"
+        "commandPath": "ccusage statusline",
+        "preserveColors": true
       }
     ],
     []
   ],
-  "flexMode": "full-minus-40",
+  "flexMode": "full-until-compact",
   "compactThreshold": 60,
   "colorLevel": 2,
+  "defaultPadding": " ",
   "inheritSeparatorColors": false,
   "globalBold": false,
   "powerline": {
@@ -67,6 +69,7 @@
     ],
     "startCaps": [],
     "endCaps": [],
+    "theme": "nord-aurora",
     "autoAlign": false
   }
 }
