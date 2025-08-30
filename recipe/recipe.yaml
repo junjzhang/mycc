@@ -40,9 +40,10 @@ tests:
       imports:
         - mycc
         - mycc.cli
-        - mycc.core
-        - mycc.modules
-        - mycc.utils
+        - mycc.config
+        - mycc.manager
+        - mycc.modules.deps
+        - mycc.modules.claude_user_setting
 
 about:
   summary: A modular Claude Code configuration manager

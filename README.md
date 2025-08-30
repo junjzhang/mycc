@@ -38,30 +38,33 @@ mycc list
 
 ## 🎯 Available Modules
 
-### Commands Module
-- **24 Claude Code slash commands** for enhanced development workflow
-- Commands include: `/commit`, `/refactor`, `/test`, `/review`, `/docs`, and more
-- Automatically installed to `~/.claude/commands/`
+MYCC uses a simplified modular architecture with two main module types:
 
-### Configs Module  
-- **Claude Code settings**: Auto-prompts, code generation preferences, editor settings
-- **ccstatusline settings**: Git status, file counts, project info display  
-- **TweakCC settings**: Enhanced features, UI customization, shortcuts
-- Smart symlinking with automatic backup of existing configs
+### Dependencies Module (`deps`)
+- **Automatic dependency detection**: Checks for Claude Code, ccstatusline, TweakCC, and ccusage
+- **Optional installation**: Can install missing dependencies automatically
+- **Status reporting**: Shows which tools are available
 
-### MCP Module
-- **Context7**: Document analysis and context management
-- **Playwright**: Browser automation and web interaction
-- Managed through Claude Code's MCP system
+### Claude User Settings Module (`claude_user_setting`)
+- **Commands sub-module**: 25+ slash commands (`.md` files) installed to `~/.claude/commands/`
+- **Configs sub-module**: Configuration templates with smart symlinking and automatic backup
+  - Claude Code settings (auto-prompts, preferences)
+  - ccstatusline settings (git status, file counts) 
+  - TweakCC settings (UI customization, shortcuts)
+- **MCP sub-module**: Model Context Protocol servers
+  - Context7: Document analysis and context management
+  - Managed through Claude Code's MCP system
 
 ## 📋 Commands
 
 ```bash
 # Installation
-mycc install --all                    # Install all modules
-mycc install --modules commands       # Install commands only
-mycc install --modules configs        # Install configs only
-mycc install --modules mcp            # Install MCP servers only
+mycc install --all                              # Install all modules
+mycc install --modules deps                     # Install dependencies module
+mycc install --modules claude_user_setting      # Install all Claude user settings
+mycc install --modules claude_user_setting:commands  # Commands only
+mycc install --modules claude_user_setting:configs   # Configs only
+mycc install --modules claude_user_setting:mcp       # MCP servers only
 
 # Management  
 mycc link                              # Link config files
@@ -71,8 +74,9 @@ mycc deps                              # Check dependencies
 mycc version                           # Show version
 
 # Removal
-mycc uninstall --all                   # Remove all modules
-mycc uninstall --modules commands     # Remove commands only
+mycc uninstall --all                           # Remove all modules
+mycc uninstall --modules deps                  # Remove dependencies module
+mycc uninstall --modules claude_user_setting   # Remove all Claude user settings
 ```
 
 ## 🛠️ Dependencies
@@ -114,10 +118,12 @@ pixi run dev-test
 ### Development Commands
 
 ```bash
-pixi run install          # Install all modules
+pixi run install          # Install all modules in development mode
 pixi run status           # Show status  
 pixi run deps             # Check dependencies
-pixi run dev-test         # Safe test mode
+pixi run test             # Run all tests (unit + integration)
+pixi run integration-test # Run CLI integration tests
+pixi run unit-test        # Run unit tests only
 pixi run lint             # Code linting
 pixi run format           # Code formatting
 ```
@@ -134,15 +140,24 @@ pixi run upload
 
 ## 📁 Project Structure
 
+MYCC uses a simplified 3-layer architecture after KISS refactoring:
+
 ```
 mycc/
 ├── mycc/                         # Python package
-│   ├── cli.py                   # CLI interface
-│   ├── core/manager.py          # Core functionality
-│   ├── modules/                 # Module handlers
+│   ├── cli.py                   # CLI interface (Tyro+Pydantic)
+│   ├── manager.py               # Module manager (core orchestrator)
+│   ├── config.py                # Configuration management
+│   ├── modules/                 # Module implementations
+│   │   ├── deps.py              # Dependencies module
+│   │   └── claude_user_setting.py  # Claude user settings module
 │   └── data/                    # Packaged data (included in wheel)
 │       ├── commands/            # Claude Code slash commands (.md)
 │       └── config/              # Configuration templates (.json)
+├── tests/                       # Pytest test suite
+│   ├── conftest.py              # Shared fixtures
+│   ├── test_integration.py      # CLI integration tests
+│   └── test_modules.py          # Unit tests
 └── scripts/                     # Build and deployment
 ```
 

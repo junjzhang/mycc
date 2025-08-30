@@ -7,38 +7,14 @@ channels = ["conda-forge"]
 platforms = ["linux-64", "osx-64", "osx-arm64"]
 
 [tasks]
-install = "python -m mycc install --all"
-uninstall = "python -m mycc uninstall --all"
-install-commands = "python -m mycc install --modules commands"
-install-configs = "python -m mycc install --modules configs"
-link-configs = "python -m mycc link"
-status = "python -m mycc status"
-list = "python -m mycc list"
-
-# Dependency management
-deps = "python -m mycc deps"
-deps-install = "python -m mycc deps --install"
-
 # Development tasks
-dev-install = "pip install -e ."
 test = "pytest"
 lint = "ruff check mycc"
 format = "ruff format mycc"
 
-# Test mode tasks (safe for development)
-dev-test = """
-    echo "🧪 Running comprehensive MYCC test suite..." &&
-    python -m mycc deps --test-mode &&
-    python -m mycc install --all --test-mode &&
-    python -m mycc status --test-mode &&
-    python -m mycc list --test-mode &&
-    python -m mycc link --test-mode &&
-    python -m mycc uninstall --all --test-mode &&
-    echo "🧹 Cleaning up test directories..." &&
-    rm -rf .test_claude .test_home &&
-    echo "✅ All tests completed successfully!"
-"""
-test-clean = "rm -rf .test_claude .test_home"
+# Testing tasks 
+integration-test = "pytest tests/test_integration.py -v"
+unit-test = "pytest tests/test_modules.py -v"
 
 # Package building tasks using hatch version + rattler-build
 build = "MYCC_VERSION=$(pixi run -e build hatch version) rattler-build build --recipe recipe/recipe.yaml --output-dir ./output"
@@ -53,6 +29,9 @@ tyro = ">=0.8.0"
 pydantic = ">=2.0.0"
 colorama = ">=0.4.4"
 tomli = ">=1.2.0"
+
+[pypi-dependencies]
+mycc = {path='.', editable = true}
 
 [feature.dev.dependencies]
 pip = "*"

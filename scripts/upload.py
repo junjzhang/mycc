@@ -2,7 +2,8 @@
 
 """MYCC Package Upload Script.
 
-Uploads built packages to conda repository using rattler-build upload
+Uploads built packages to conda repository using rattler-build upload.
+Supports the simplified MYCC architecture with basic package variant.
 """
 
 import os
@@ -17,7 +18,8 @@ try:
     from tqdm import tqdm
 except ImportError:
     # Fallback if tqdm is not available
-    def tqdm(iterable, **kwargs):  # noqa: ARG001
+    def tqdm(iterable, **kwargs):
+        del kwargs  # Unused parameter
         return iterable
 
 
@@ -50,9 +52,9 @@ class PackageUploader:
     def find_packages(self, prefix: str = "*") -> List[Path]:
         """Find all conda packages that match the prefix."""
         packages = []
-        skip_dirs = {"bld", "src_cache", "test", "noarch"}
+        skip_dirs = {"bld", "src_cache", "test"}
 
-        # Find packages in platform subdirectories (e.g., linux-64/, osx-arm64/)
+        # Find packages in platform subdirectories (e.g., linux-64/, osx-arm64/, noarch/)
         for subdir in self.config.output_path.iterdir():
             if subdir.is_dir() and subdir.name not in skip_dirs:
                 for file in subdir.iterdir():
@@ -61,7 +63,7 @@ class PackageUploader:
                         if prefix == "*":
                             packages.append(file)
                         elif prefix == "mycc-":
-                            # For basic packages, include only mycc- but not mycc-full-
+                            # For basic packages, include only mycc- (simplified architecture)
                             if file.name.startswith("mycc-") and not file.name.startswith("mycc-full-"):
                                 packages.append(file)
                         elif file.name.startswith(prefix):
@@ -74,7 +76,7 @@ class PackageUploader:
                 if prefix == "*":
                     packages.append(file)
                 elif prefix == "mycc-":
-                    # For basic packages, include only mycc- but not mycc-full-
+                    # For basic packages, include only mycc- (simplified architecture)
                     if file.name.startswith("mycc-") and not file.name.startswith("mycc-full-"):
                         packages.append(file)
                 elif file.name.startswith(prefix):
@@ -139,15 +141,22 @@ Environment variables:
 
 Examples:
   %(prog)s                    # Upload all packages
-  %(prog)s --type basic       # Upload basic packages only
-  %(prog)s --type full        # Upload full packages only
+  %(prog)s --type basic       # Upload basic packages only (mycc-)
   %(prog)s --delete           # Delete local files after upload
+  %(prog)s --dry-run          # Show what would be uploaded
   PREFIX_CHANNEL=my-channel %(prog)s  # Use custom channel
         """,
     )
 
     parser.add_argument(
         "--delete", "-d", action="store_true", help="Delete local package files after successful upload"
+    )
+
+    parser.add_argument(
+        "--type",
+        choices=["basic", "all"],
+        default="all",
+        help="Package type to upload: 'basic' for mycc packages only, 'all' for all packages (default: all)",
     )
 
     parser.add_argument("--dry-run", action="store_true", help="Show what would be uploaded without actually uploading")
@@ -166,8 +175,8 @@ Examples:
         sys.exit(1)
 
     # Determine package prefix based on type
-    prefix_map = {"basic": "mycc-", "full": "mycc-full-", "all": "*"}
-    prefix = prefix_map["all"]
+    prefix_map = {"basic": "mycc-", "all": "*"}
+    prefix = prefix_map[args.type]
 
     # Find packages
     packages = uploader.find_packages(prefix)
