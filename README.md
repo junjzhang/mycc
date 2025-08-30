@@ -126,6 +126,11 @@ mycc/                          # Claude Configuration Manager
 - **TweakCC settings**: Enhanced features, UI customization, shortcuts, and integrations
 - Smart symlinking with automatic backup of existing configs
 
+### MCP Module
+- **Context7**: Document analysis and context management with AI-powered indexing
+- **Playwright**: Browser automation, web scraping, and interaction capabilities
+- Managed through Claude Code's MCP system with user scope installation
+
 ## 🗑️ Uninstall
 
 ```bash

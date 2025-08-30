@@ -115,6 +115,26 @@ class DependencyChecker:
         """Check if TweakCC is installed"""
         return self.check_npm_package("tweakcc")
     
+    def check_mcp_support(self) -> bool:
+        """Check if Claude Code MCP commands are available"""
+        if self.test_mode:
+            return True  # Simulate MCP support in test mode
+        
+        if not self.check_command_exists("claude"):
+            return False
+        
+        try:
+            # Try to run claude mcp list to verify MCP support
+            result = subprocess.run(
+                ["claude", "mcp", "--help"],
+                capture_output=True,
+                text=True,
+                check=False
+            )
+            return result.returncode == 0
+        except FileNotFoundError:
+            return False
+    
     def install_npm_package(self, package: str, display_name: str) -> bool:
         """Install an npm package globally"""
         if self.test_mode:

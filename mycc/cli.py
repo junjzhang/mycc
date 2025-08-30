@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
-"""
-MYCC CLI - Main command line interface using tyro and pydantic
-"""
+"""MYCC CLI - Main command line interface using tyro and pydantic."""
 
 import sys
-from pathlib import Path
 from enum import Enum
+from pathlib import Path
 
 import tyro
-from pydantic import BaseModel, Field
-from colorama import init, Fore, Style
+from colorama import Fore, Style, init
+from pydantic import Field, BaseModel
 
-from mycc.core.manager import ConfigManager
 from mycc import __version__
+from mycc.core.manager import ConfigManager
 
 # Initialize colorama for cross-platform colored output
 init()
@@ -22,14 +20,15 @@ PROJECT_ROOT = Path(__file__).parent.parent
 
 
 class ModuleType(str, Enum):
-    """Available module types"""
+    """Available module types."""
     commands = "commands"
     configs = "configs"
+    mcp = "mcp"
 
 
 class InstallCommand(BaseModel):
-    """Install Claude Code modules"""
-    
+    """Install Claude Code modules."""
+
     modules: list[ModuleType] | None = Field(
         default=None, 
         description="Modules to install. If not specified, use --all"
@@ -88,8 +87,8 @@ class InstallCommand(BaseModel):
 
 
 class UninstallCommand(BaseModel):
-    """Uninstall Claude Code modules"""
-    
+    """Uninstall Claude Code modules."""
+
     modules: list[ModuleType] | None = Field(
         default=None, 
         description="Modules to uninstall. If not specified, use --all"
@@ -134,8 +133,8 @@ class UninstallCommand(BaseModel):
 
 
 class LinkCommand(BaseModel):
-    """Link configuration files to Claude directories"""
-    
+    """Link configuration files to Claude directories."""
+
     test_mode: bool = Field(
         default=False,
         description="Use test mode (safe for development)"
@@ -162,8 +161,8 @@ class LinkCommand(BaseModel):
 
 
 class StatusCommand(BaseModel):
-    """Show installation status of modules"""
-    
+    """Show installation status of modules."""
+
     test_mode: bool = Field(
         default=False,
         description="Use test mode (safe for development)"
@@ -194,8 +193,8 @@ class StatusCommand(BaseModel):
 
 
 class ListCommand(BaseModel):
-    """List available modules"""
-    
+    """List available modules."""
+
     test_mode: bool = Field(
         default=False,
         description="Use test mode (safe for development)"
@@ -223,15 +222,15 @@ class ListCommand(BaseModel):
 
 
 class VersionCommand(BaseModel):
-    """Show version information"""
+    """Show version information."""
     
     def run(self):
         print(f"MYCC version {__version__}")
 
 
 class DepsCommand(BaseModel):
-    """Check and manage dependencies"""
-    
+    """Check and manage dependencies."""
+
     test_mode: bool = Field(
         default=False,
         description="Use test mode (safe for development)"
@@ -260,7 +259,7 @@ class DepsCommand(BaseModel):
 
 
 def main():
-    """Main entry point"""
+    """Main entry point."""
     try:
         
         args = tyro.cli(

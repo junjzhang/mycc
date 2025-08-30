@@ -9,6 +9,7 @@ from typing import Any
 
 from mycc.modules.commands import CommandsModule
 from mycc.modules.configs import ConfigsModule
+from mycc.modules.mcp import MCPModule
 from mycc.utils.dependencies import DependencyChecker
 
 
@@ -38,6 +39,7 @@ class ConfigManager:
         self.modules = {
             'commands': CommandsModule(self.project_root, self.claude_dir, self.test_mode),
             'configs': ConfigsModule(self.project_root, self.claude_dir, self.test_mode, self.home_dir),
+            'mcp': MCPModule(self.project_root, self.claude_dir, self.test_mode),
         }
         
         # Ensure directories exist

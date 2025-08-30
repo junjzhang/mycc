@@ -1,0 +1,14 @@
+{
+  "context7": {
+    "name": "context7",
+    "description": "Context7 MCP server for enhanced context management with AI-powered document analysis",
+    "package": "npx -y @upstash/context7-mcp",
+    "scope": "user",
+    "features": [
+      "Document indexing and search",
+      "Context-aware responses", 
+      "Large document processing",
+      "Vector embeddings"
+    ]
+  }
+}
