@@ -1,3 +1,5 @@
 .claude/*.local.*
 .pixi
 .ruff_cache
+
+__pycache__
