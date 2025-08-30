@@ -1,56 +1,38 @@
 #!/bin/bash
-# CCPlugins Uninstaller for Mac/Linux
+# MYCC - Modular Claude Code Configuration Manager Uninstaller
 
 set -e
 
-echo "CCPlugins Uninstaller"
-echo "===================="
+echo "MYCC Uninstaller"
+echo "================"
 
-COMMANDS_DIR="$HOME/.claude/commands"
-
-# List of CCPlugins commands (including old ones for compatibility)
-COMMANDS=(
-    "cleanproject.md"
-    "commit.md"
-    "contributing.md"
-    "create-todos.md"
-    "docs.md"
-    "explain-like-senior.md"
-    "find-todos.md"
-    "fix-imports.md"
-    "fix-todos.md"
-    "format.md"
-    "implement.md"
-    "make-it-pretty.md"
-    "predict-issues.md"
-    "remove-comments.md"
-    "review.md"
-    "scaffold.md"
-    "security-scan.md"
-    "session-end.md"
-    "session-start.md"
-    "test.md"
-    "todos-to-issues.md"
-    "undo.md"
-    "understand.md"
-    "refactor.md"
-)
-
-# Count installed commands
-INSTALLED=0
-for cmd in "${COMMANDS[@]}"; do
-    if [ -f "$COMMANDS_DIR/$cmd" ]; then
-        ((INSTALLED++))
+# Check if MYCC is installed
+if ! command -v pixi &> /dev/null; then
+    echo "[INFO] Pixi not found. Checking for direct Python installation..."
+    if ! python3 -m mycc --help &> /dev/null 2>&1; then
+        echo "[INFO] MYCC is not installed."
+        exit 0
     fi
-done
-
-if [ $INSTALLED -eq 0 ]; then
-    echo "[INFO] No CCPlugins commands found."
-    exit 0
+else
+    if [ ! -f "pixi.toml" ]; then
+        echo "[INFO] MYCC pixi project not found."
+        exit 0
+    fi
 fi
 
-echo "[FOUND] $INSTALLED CCPlugins commands installed"
-read -p "Remove all CCPlugins commands? (y/N): " -r
+echo "[INFO] MYCC installation found."
+echo ""
+
+# Show current status
+echo "Current installation status:"
+if command -v pixi &> /dev/null && [ -f "pixi.toml" ]; then
+    pixi run status 2>/dev/null || echo "  Unable to show status"
+else
+    python3 -m mycc status 2>/dev/null || echo "  Unable to show status"  
+fi
+
+echo ""
+read -p "Remove all MYCC modules and configurations? (y/N): " -r
 echo
 
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
@@ -58,28 +40,50 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     exit 0
 fi
 
-# Remove commands
-REMOVED=0
-for cmd in "${COMMANDS[@]}"; do
-    if [ -f "$COMMANDS_DIR/$cmd" ]; then
-        rm "$COMMANDS_DIR/$cmd"
-        echo "  - Removed $cmd"
-        ((REMOVED++))
-    fi
-done
+# Uninstall modules using MYCC itself
+echo "[INFO] Uninstalling MYCC modules..."
+if command -v pixi &> /dev/null && [ -f "pixi.toml" ]; then
+    pixi run uninstall 2>/dev/null || echo "  Some modules may have already been removed"
+else
+    python3 -m mycc uninstall --all 2>/dev/null || echo "  Some modules may have already been removed"
+fi
 
-# Clean up cache and backups
-CACHE_DIR="$HOME/.claude/.ccplugins_cache"
-BACKUP_DIR="$HOME/.claude/.ccplugins_backups"
+# Clean pixi environment
+if command -v pixi &> /dev/null && [ -f "pixi.toml" ]; then
+    echo "[INFO] Cleaning pixi environment..."
+    rm -rf .pixi 2>/dev/null || echo "  Pixi environment already clean"
+fi
 
-if [ -d "$CACHE_DIR" ] || [ -d "$BACKUP_DIR" ]; then
-    read -p "Also remove cache and backups? (y/N): " -r
+# Remove Python package if installed via pip
+echo "[INFO] Removing MYCC Python package..."
+python3 -m pip uninstall mycc -y 2>/dev/null || echo "  Package was not installed via pip"
+
+# Clean up any remaining symlinks
+echo "[INFO] Cleaning up configuration links..."
+CLAUDE_SETTINGS="$HOME/.claude/settings.json"
+STATUSLINE_SETTINGS="$HOME/.config/ccstatusline/settings.json"
+
+if [ -L "$CLAUDE_SETTINGS" ]; then
+    rm "$CLAUDE_SETTINGS"
+    echo "  - Removed Claude settings link"
+fi
+
+if [ -L "$STATUSLINE_SETTINGS" ]; then
+    rm "$STATUSLINE_SETTINGS"  
+    echo "  - Removed ccstatusline settings link"
+fi
+
+# Ask about backups
+if [ -f "$HOME/.claude/settings.json.backup" ] || [ -f "$HOME/.config/ccstatusline/settings.json.backup" ]; then
+    echo ""
+    read -p "Remove backup configuration files? (y/N): " -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        [ -d "$CACHE_DIR" ] && rm -rf "$CACHE_DIR" && echo "  - Removed cache directory"
-        [ -d "$BACKUP_DIR" ] && rm -rf "$BACKUP_DIR" && echo "  - Removed backups directory"
+        [ -f "$HOME/.claude/settings.json.backup" ] && rm "$HOME/.claude/settings.json.backup" && echo "  - Removed Claude settings backup"
+        [ -f "$HOME/.config/ccstatusline/settings.json.backup" ] && rm "$HOME/.config/ccstatusline/settings.json.backup" && echo "  - Removed ccstatusline settings backup"
     fi
 fi
 
-echo "[SUCCESS] Uninstalled $REMOVED commands"
-echo "Thanks for trying CCPlugins!"
+echo ""
+echo "[SUCCESS] MYCC has been uninstalled."
+echo "Thanks for trying MYCC!"

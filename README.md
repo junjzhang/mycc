@@ -1,17 +1,195 @@
-# A personal Claude Code setting
+# MYCC - Modular Claude Code Configuration Manager
 
-## Install on linux/MacOS
+A modern, modular configuration management system for Claude Code, built with Python, Tyro, and Pixi. MYCC allows you to easily install, manage, and configure Claude Code commands and settings.
+
+## ✨ Features
+
+- 🧩 **Modular Design**: Commands, configurations, and future extensions as separate modules
+- 🎯 **Type-Safe CLI**: Built with Tyro and Pydantic for excellent developer experience
+- 📦 **Modern Packaging**: Uses Pixi for dependency management and Python packaging
+- 🔗 **Smart Configuration**: Automatic backup and symbolic linking of config files
+- 🎨 **Rich Output**: Colorized terminal output with clear status indicators
+- ⚡ **Fast & Reliable**: Python-based with minimal dependencies
+- 🛠️ **Dependency Management**: Automatic detection and installation of Claude Code and tools
+
+## 📋 Requirements
+
+- **Python 3.10+** (uses modern PEP 585 type hints)
+- [Pixi](https://pixi.sh) (recommended) or pip
+
+## 🚀 Quick Start
+
+### Option 1: Using Pixi (Recommended)
+
+```bash
+# Install Pixi if you haven't already
+curl -fsSL https://pixi.sh/install.sh | bash
+
+# Clone and install
+git clone https://github.com/junjzhang/mycc.git
+cd mycc
+./install.sh
+
+# Quick setup - install everything
+pixi run install && pixi run link-configs
+```
+
+### Option 2: Direct Installation
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/junjzhang/mycc/main/install.sh | bash
 ```
 
-## Uninstall
+## 🎯 Usage
+
+### Command Line Interface
+
+MYCC provides a clean, type-safe CLI with the following commands:
 
 ```bash
+# Show help
+python -m mycc --help
+
+# Install modules
+python -m mycc install-command --all                    # Install all modules
+python -m mycc install-command --modules commands       # Install commands only
+python -m mycc install-command --modules configs        # Install configs only
+
+# Dependency management
+python -m mycc deps-command                              # Check dependencies
+python -m mycc deps-command --install                    # Install missing dependencies
+
+# Manage configurations  
+python -m mycc link-command                              # Link config files
+
+# Check status
+python -m mycc status-command                            # Show installation status
+python -m mycc list-command                              # List available modules
+
+# Uninstall
+python -m mycc uninstall-command --all                  # Remove all modules
+```
+
+### Pixi Tasks (Shortcuts)
+
+If you're using Pixi, you can use these convenient shortcuts:
+
+```bash
+pixi run install          # Install all modules
+pixi run install-commands # Install commands only
+pixi run install-configs  # Install configs only
+pixi run link-configs     # Link configuration files
+pixi run status           # Show status
+pixi run list             # List modules
+pixi run uninstall        # Remove all modules
+
+# Dependency Management
+pixi run deps             # Check dependencies  
+pixi run deps-install     # Install missing dependencies
+
+# Development & Testing
+pixi run dev-test         # Safe test mode (uses fake directories)
+pixi run test-clean       # Clean test directories
+```
+
+## 📁 Project Structure
+
+```
+mycc/                          # Claude Configuration Manager
+├── pyproject.toml            # Python project configuration
+├── pixi.toml                 # Pixi project and tasks
+├── mycc/                     # Python package
+│   ├── cli.py               # Tyro-based CLI
+│   ├── core/                # Core functionality
+│   │   └── manager.py       # Configuration manager
+│   └── modules/             # Module handlers
+│       ├── commands.py      # Commands module
+│       └── configs.py       # Configs module
+├── commands/                # Command template files (24 commands)
+├── config/                  # Configuration templates
+│   ├── claude/              # Claude Code settings
+│   └── ccstatusline/        # Status line settings
+├── install.sh               # Installation script
+└── uninstall.sh            # Uninstall script
+```
+
+## 🔧 Available Modules
+
+### Commands Module
+- **24 Claude Code slash commands** for enhanced development workflow
+- Commands include: `/commit`, `/refactor`, `/test`, `/review`, `/docs`, and more
+- Automatically installed to `~/.claude/commands/`
+
+### Configs Module  
+- **Claude Code settings**: Auto-prompts, code generation preferences, editor settings
+- **CCStatusline settings**: Git status, file counts, project info display
+- **TweakCC settings**: Enhanced features, UI customization, shortcuts, and integrations
+- Smart symlinking with automatic backup of existing configs
+
+## 🗑️ Uninstall
+
+```bash
+# Using the uninstall script
+./uninstall.sh
+
+# Or via curl
 curl -fsSL https://raw.githubusercontent.com/junjzhang/mycc/main/uninstall.sh | bash
 ```
 
-## Acknowledgments
+## 🧪 Development & Testing
 
-Special thanks to [brennercruvinel/CCPlugins](https://github.com/brennercruvinel/CCPlugins/tree/main/commands) for providing the foundation and inspiration for the commands in this repository. This project builds upon and modifies the excellent work from CCPlugins.
+MYCC includes a safe test mode for development that uses fake directories instead of your real `.claude` configuration:
+
+```bash
+# Test mode via CLI flags
+python -m mycc install-command --all --test-mode
+python -m mycc status-command --test-mode
+
+# Test mode via environment variable
+MYCC_TEST_MODE=1 python -m mycc status-command
+
+# Comprehensive test suite
+pixi run dev-test
+```
+
+All test operations use `.test_claude` and `.test_home` directories, keeping your real configuration safe.
+
+## 🛠️ Dependency Management
+
+MYCC automatically detects and can install required dependencies:
+
+- **Claude Code**: The main CLI tool (`@anthropic-ai/claude-code`)
+- **ccstatusline**: Status line enhancement (optional)
+- **TweakCC**: Claude Code enhancement and customization tool (optional)
+
+```bash
+# Check what's installed
+pixi run deps
+
+# Install missing dependencies  
+pixi run deps-install
+
+# During module installation, dependencies are checked automatically
+# Skip dependency checks with --skip-deps flag
+python -m mycc install-command --all --skip-deps
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! This project follows modern Python development practices:
+
+- **Python 3.10+**: Uses PEP 585 type hints (`list[str]` instead of `List[str]`)
+- **Type Safety**: Full type annotations with Pydantic models  
+- **Code Quality**: Ruff formatting and linting
+- **Testing**: pytest for unit tests and safe test mode for development
+- **Documentation**: Clear docstrings and README
+
+## 🙏 Acknowledgments
+
+Special thanks to:
+- [brennercruvinel/CCPlugins](https://github.com/brennercruvinel/CCPlugins/tree/main/commands) for the foundation and inspiration for the commands
+- The Claude Code community for making development more productive
+
+## 📄 License
+
+MIT License - feel free to use this project for your own Claude Code setup!

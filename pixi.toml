@@ -1,0 +1,56 @@
+[project]
+name = "mycc"
+version = "2.0.0"
+description = "A modular Claude Code configuration manager"
+authors = ["junjzhang <junjzhang@example.com>"]
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-64", "osx-arm64"]
+
+[tasks]
+install = "python -m mycc install-command --all"
+uninstall = "python -m mycc uninstall-command --all"
+install-commands = "python -m mycc install-command --modules commands"
+install-configs = "python -m mycc install-command --modules configs"
+link-configs = "python -m mycc link-command"
+status = "python -m mycc status-command"
+list = "python -m mycc list-command"
+
+# Dependency management
+deps = "python -m mycc deps-command"
+deps-install = "python -m mycc deps-command --install"
+
+# Development tasks
+dev-install = "pip install -e ."
+test = "pytest"
+lint = "ruff check mycc"
+format = "ruff format mycc"
+
+# Test mode tasks (safe for development)
+dev-test = """
+    echo "🧪 Running comprehensive MYCC test suite..." &&
+    python -m mycc deps-command --test-mode &&
+    python -m mycc install-command --all --test-mode &&
+    python -m mycc status-command --test-mode &&
+    python -m mycc list-command --test-mode &&
+    python -m mycc link-command --test-mode &&
+    python -m mycc uninstall-command --all --test-mode &&
+    echo "🧹 Cleaning up test directories..." &&
+    rm -rf .test_claude .test_home &&
+    echo "✅ All tests completed successfully!"
+"""
+test-clean = "rm -rf .test_claude .test_home"
+
+[dependencies]
+python = ">=3.10"
+tyro = ">=0.8.0"
+pydantic = ">=2.0.0"
+colorama = ">=0.4.4"
+pyyaml = ">=6.0"
+
+[feature.dev.dependencies]
+pytest = ">=7.0.0"
+ruff = ">=0.1.0"
+
+[environments]
+default = []
+dev = { features = ["dev"] }

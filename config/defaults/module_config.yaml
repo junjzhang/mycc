@@ -1,0 +1,38 @@
+# MYCC Module Configuration
+# This file defines the available modules and their properties
+
+modules:
+  commands:
+    name: "Claude Code Commands"
+    description: "Slash commands for Claude Code CLI"
+    source_dir: "commands"
+    target_dir: ".claude/commands"
+    file_pattern: "*.md"
+    enabled: true
+    
+  configs:
+    name: "Configuration Files"  
+    description: "Claude Code and related tool configurations"
+    source_dir: "config"
+    target_dir: ".claude"
+    enabled: true
+    files:
+      - source: "claude/settings.json"
+        target: ".claude/settings.json"
+      - source: "ccstatusline/settings.json"
+        target: ".config/ccstatusline/settings.json"
+
+# Future modules can be added here
+# themes:
+#   name: "UI Themes"
+#   description: "Custom themes for Claude Code"
+#   source_dir: "themes"
+#   target_dir: ".claude/themes"
+#   enabled: false
+#   
+# snippets:
+#   name: "Code Snippets"
+#   description: "Reusable code snippets"
+#   source_dir: "snippets"
+#   target_dir: ".claude/snippets"  
+#   enabled: false

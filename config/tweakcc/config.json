@@ -1,0 +1,38 @@
+{
+  "ccInstallationDir": "/usr/local/lib/node_modules/@anthropic-ai/claude-code",
+  "features": {
+    "enhancedAutocomplete": true,
+    "improvedErrorHandling": true,
+    "customShortcuts": true,
+    "themeSupport": true,
+    "performanceOptimizations": true
+  },
+  "ui": {
+    "colorScheme": "auto",
+    "fontSize": "medium",
+    "compactMode": false,
+    "showHints": true
+  },
+  "shortcuts": {
+    "quickCommit": "Ctrl+Shift+C",
+    "quickRefactor": "Ctrl+Shift+R",
+    "quickFormat": "Ctrl+Shift+F",
+    "quickDocs": "Ctrl+Shift+D"
+  },
+  "integrations": {
+    "vscode": {
+      "enabled": true,
+      "syncSettings": true
+    },
+    "git": {
+      "enabled": true,
+      "autoStage": false,
+      "showDiffs": true
+    }
+  },
+  "experimental": {
+    "betaFeatures": false,
+    "logging": false,
+    "telemetry": false
+  }
+}
