@@ -133,13 +133,16 @@ class TestClaudeUserSettingModule:
         assert module.claude_dir == self.claude_dir
         assert module.home_dir == self.home_dir
         assert module.data_dir == self.data_dir
-        assert module.commands_dir == self.claude_dir / "commands"
+        # Check sub-modules are initialized
+        assert module.commands is not None
+        assert module.configs is not None
+        assert module.mcp is not None
 
     def test_install_commands(self):
         """Test commands installation."""
         module = ClaudeUserSettingModule(self.claude_dir, self.home_dir, self.data_dir)
 
-        result = module._install_commands()
+        result = module.install(["commands"])
         assert result is True
 
         # Check that files were copied
@@ -151,7 +154,7 @@ class TestClaudeUserSettingModule:
         """Test configs installation."""
         module = ClaudeUserSettingModule(self.claude_dir, self.home_dir, self.data_dir)
 
-        result = module._install_configs()
+        result = module.install(["configs"])
         assert result is True
 
         # Check that symlinks were created
@@ -174,7 +177,7 @@ class TestClaudeUserSettingModule:
         with patch("subprocess.run") as mock_run:
             mock_run.side_effect = FileNotFoundError()
 
-            result = module._install_mcp()
+            result = module.install(["mcp"])
             assert result is False  # Should fail when CLI not available
 
     def test_install_with_sub_modules(self):
@@ -186,7 +189,7 @@ class TestClaudeUserSettingModule:
         assert result is True
 
         # Check that only commands were installed
-        assert module._is_commands_installed() is True
+        assert module.commands.is_installed() is True
 
     def test_get_status(self):
         """Test status reporting."""

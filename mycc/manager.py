@@ -7,6 +7,7 @@ that manages only two modules: deps and claude_user_setting.
 from typing import Any, Dict, List, Optional
 from pathlib import Path
 
+from mycc.config import validate_all
 from mycc.modules.deps import DepsModule
 from mycc.modules.claude_user_setting import ClaudeUserSettingModule
 
@@ -24,29 +25,13 @@ class ModuleManager:
             home_dir: Home directory path (defaults to ~)
             data_dir: Data directory path (defaults to package data)
         """
-        # Set default paths if not provided
+        # Set paths with clean defaults - no test mode logic here
         self.claude_dir = claude_dir or (Path.home() / ".claude")
         self.home_dir = home_dir or Path.home()
+        self.data_dir = data_dir or (Path(__file__).parent / "data")
 
-        # Data directory - try to find package data
-        if data_dir:
-            self.data_dir = data_dir
-        else:
-            # Try to find data directory relative to this file
-            package_root = Path(__file__).parent
-            self.data_dir = package_root / "data"
-
-            # If that doesn't exist, try importlib.resources approach
-            if not self.data_dir.exists():
-                try:
-                    from importlib import resources
-
-                    import mycc.data
-
-                    self.data_dir = Path(str(resources.files(mycc.data)))
-                except (ImportError, AttributeError):
-                    # Fallback to package root
-                    self.data_dir = package_root / "data"
+        # Validate configuration at startup
+        self._validate_configuration()
 
         # Initialize modules
         self.deps = DepsModule()
@@ -328,3 +313,12 @@ class ModuleManager:
         """Ensure required directories exist."""
         self.claude_dir.mkdir(parents=True, exist_ok=True)
         (self.claude_dir / "commands").mkdir(parents=True, exist_ok=True)
+
+    def _validate_configuration(self) -> None:
+        """Validate configuration at startup and warn about issues."""
+        errors = validate_all(self.data_dir)
+        if errors:
+            print("⚠️  Configuration validation warnings:")
+            for error in errors:
+                print(f"   - {error}")
+            print("   MYCC will continue but some features may not work properly.")

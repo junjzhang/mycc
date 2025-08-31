@@ -5,8 +5,10 @@ Users are responsible for installing missing dependencies themselves.
 """
 
 import shutil
-import subprocess
+from typing import Any, Dict
 from pathlib import Path
+
+from mycc.external_commands import external_cmd
 
 
 class DepsModule:
@@ -87,7 +89,7 @@ class DepsModule:
         """Dependencies don't have a specific install path."""
         return Path("system-managed")
 
-    def get_status(self) -> dict:
+    def get_status(self) -> Dict[str, Any]:
         """Get detailed status of all dependencies."""
         status = {}
         for dep_key, dep_info in self.DEPENDENCIES.items():
@@ -114,23 +116,19 @@ class DepsModule:
         if not dep_info:
             return {"installed": False, "version": None}
 
-        try:
-            # Try to run the check command
-            result = subprocess.run(dep_info["check_command"], capture_output=True, text=True, timeout=10)
+        # Use unified external command executor
+        result = external_cmd.run(dep_info["check_command"], timeout=10)
 
-            if result.returncode == 0:
-                # Extract version from output
-                version = result.stdout.strip()
-                # Clean up version output (remove extra text)
-                if version.startswith("v"):
-                    version = version[1:]  # Remove 'v' prefix
-                version = version.split("\n")[0]  # Take first line only
+        if result.success:
+            # Extract version from output
+            version = result.stdout.strip()
+            # Clean up version output (remove extra text)
+            if version.startswith("v"):
+                version = version[1:]  # Remove 'v' prefix
+            version = version.split("\n")[0]  # Take first line only
 
-                return {"installed": True, "version": version}
-            else:
-                return {"installed": False, "version": None}
-
-        except (subprocess.TimeoutExpired, subprocess.SubprocessError, FileNotFoundError):
+            return {"installed": True, "version": version}
+        else:
             return {"installed": False, "version": None}
 
     def _check_command_exists(self, command: str) -> bool:

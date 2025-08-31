@@ -1,30 +1,23 @@
 #!/usr/bin/env python3
 """MYCC CLI - Simplified command line interface using tyro and pydantic."""
 
-import os
 import sys
 from typing import List, Optional
-from pathlib import Path
 
 import tyro
 from pydantic import Field, BaseModel
 
 from mycc import __version__
 from mycc.manager import ModuleManager
+from mycc.module_spec import ModuleSpec
+from mycc.test_environment import TestEnvironment
 
 
 def create_module_manager() -> ModuleManager:
-    """Create ModuleManager with test mode handling."""
-    test_mode = bool(os.getenv("MYCC_TEST_MODE", ""))
-
-    if test_mode:
-        claude_dir = Path.cwd() / ".test_claude"
-        home_dir = Path.cwd() / ".test_home"
-        print("🧪 Using test mode with temporary directories")
-        # In test mode, use test directories but let data_dir default to real package data
-        return ModuleManager(claude_dir, home_dir)
-    else:
-        return ModuleManager()
+    """Create ModuleManager with unified test mode handling."""
+    TestEnvironment.print_test_mode_info()
+    claude_dir, home_dir = TestEnvironment.get_manager_paths()
+    return ModuleManager(claude_dir, home_dir)
 
 
 class Install(BaseModel):
@@ -56,16 +49,12 @@ class Install(BaseModel):
             print("Claude user setting sub-modules: commands, configs, mcp")
             return
 
-        success = True
-        for module_spec in self.modules:
-            # Handle sub-module specifications like "claude_user_setting:commands,configs"
-            if ":" in module_spec:
-                module_name, sub_modules_str = module_spec.split(":", 1)
-                sub_modules = [sm.strip() for sm in sub_modules_str.split(",")]
-                result = manager.install_module(module_name, sub_modules=sub_modules)
-            else:
-                result = manager.install_module(module_spec)
+        # Parse all module specifications at CLI layer - no string parsing in lower layers
+        module_specs = ModuleSpec.parse_multiple(self.modules)
 
+        success = True
+        for spec in module_specs:
+            result = manager.install_module(spec.name, sub_modules=spec.sub_modules)
             if not result:
                 success = False
 
@@ -101,16 +90,12 @@ class Uninstall(BaseModel):
             print("❌ No modules specified. Use --all to uninstall everything.")
             return
 
-        success = True
-        for module_spec in self.modules:
-            # Handle sub-module specifications
-            if ":" in module_spec:
-                module_name, sub_modules_str = module_spec.split(":", 1)
-                sub_modules = [sm.strip() for sm in sub_modules_str.split(",")]
-                result = manager.uninstall_module(module_name, sub_modules=sub_modules)
-            else:
-                result = manager.uninstall_module(module_spec)
+        # Parse all module specifications at CLI layer - consistent with install
+        module_specs = ModuleSpec.parse_multiple(self.modules)
 
+        success = True
+        for spec in module_specs:
+            result = manager.uninstall_module(spec.name, sub_modules=spec.sub_modules)
             if not result:
                 success = False
 
