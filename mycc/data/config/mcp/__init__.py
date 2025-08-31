@@ -1,1 +1,0 @@
-"""MCP configuration data package."""

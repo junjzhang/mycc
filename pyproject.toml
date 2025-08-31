@@ -19,7 +19,6 @@ dependencies = [
     "tyro>=0.8.0",
     "pydantic>=2.0.0",
     "colorama>=0.4.4",
-    "tomli>=1.2.0",
 ]
 
 [project.scripts]

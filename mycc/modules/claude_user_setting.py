@@ -437,7 +437,8 @@ class ClaudeUserSettingModule:
 
         try:
             # Execute claude mcp remove command
-            cmd = ["claude", "mcp", "remove", server_key, "-s", "user"]
+            scope = server_info.get("scope", "user")
+            cmd = ["claude", "mcp", "remove", server_key, "-s", scope]
 
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
 

@@ -39,8 +39,14 @@ MCP_SERVERS = {
     "context7": {
         "name": "Context7",
         "package": "npx -y @upstash/context7-mcp",
-        "description": "Context7 MCP server for enhanced context management",
+        "description": "Context7 MCP server for enhanced context management with AI-powered document analysis",
         "scope": "user",
+        "features": [
+            "Document indexing and search",
+            "Context-aware responses",
+            "Large document processing",
+            "Vector embeddings",
+        ],
     }
 }
 

@@ -29,8 +29,8 @@ mycc install --all
 # Check installation status
 mycc status
 
-# Link configuration files (reuses configs module)
-mycc link
+# Install configuration files (includes automatic linking)
+mycc install --modules claude_user_setting:configs
 
 # Show available modules
 mycc list
@@ -67,7 +67,6 @@ mycc install --modules claude_user_setting:configs   # Configs only
 mycc install --modules claude_user_setting:mcp       # MCP servers only
 
 # Management  
-mycc link                              # Link config files
 mycc status                            # Show installation status
 mycc list                              # List available modules
 mycc deps                              # Check dependencies
@@ -92,8 +91,8 @@ MYCC automatically detects and can install required dependencies:
 # Check dependencies
 mycc deps
 
-# Install missing dependencies automatically
-mycc deps --install
+# Check dependencies (provides manual installation hints)
+mycc deps
 ```
 
 ## 🧪 Development Setup

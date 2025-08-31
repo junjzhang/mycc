@@ -1646,12 +1646,11 @@ packages:
   timestamp: 1745349566387
 - pypi: .
   name: mycc
-  version: 0.0.4.dev4+g3205599ad.d20250830
-  sha256: ffd824963d6e21e895ca0548d2297ab938ccfc4d49512ef0154d98627ef16015
+  version: 0.0.4.dev7+g5c2315986.d20250831
+  sha256: 12e6195c66cd86618110e417473a1eccc6618b732d1abe6476aa5abeff75337b
   requires_dist:
   - colorama>=0.4.4
   - pydantic>=2.0.0
-  - tomli>=1.2.0
   - tyro>=0.8.0
   requires_python: '>=3.10'
   editable: true

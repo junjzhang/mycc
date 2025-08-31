@@ -13,6 +13,20 @@ from mycc import __version__
 from mycc.manager import ModuleManager
 
 
+def create_module_manager() -> ModuleManager:
+    """Create ModuleManager with test mode handling."""
+    test_mode = bool(os.getenv("MYCC_TEST_MODE", ""))
+
+    if test_mode:
+        claude_dir = Path.cwd() / ".test_claude"
+        home_dir = Path.cwd() / ".test_home"
+        print("🧪 Using test mode with temporary directories")
+        # In test mode, use test directories but let data_dir default to real package data
+        return ModuleManager(claude_dir, home_dir)
+    else:
+        return ModuleManager()
+
+
 class Install(BaseModel):
     """Install Claude Code modules."""
 
@@ -23,18 +37,7 @@ class Install(BaseModel):
     skip_deps: bool = Field(default=False, description="Skip dependency checks")
 
     def run(self):
-        # Handle test mode from environment
-        test_mode = bool(os.getenv("MYCC_TEST_MODE", ""))
-
-        # Set up paths for test mode if needed
-        if test_mode:
-            claude_dir = Path.cwd() / ".test_claude"
-            home_dir = Path.cwd() / ".test_home"
-            # Use real data directory but test install locations
-            manager = ModuleManager(claude_dir, home_dir)
-            print("🧪 Using test mode with temporary directories")
-        else:
-            manager = ModuleManager()
+        manager = create_module_manager()
 
         # Install all modules
         if self.all:
@@ -77,18 +80,7 @@ class Uninstall(BaseModel):
     all: bool = Field(default=False, description="Uninstall all modules")
 
     def run(self):
-        # Handle test mode from environment
-        test_mode = bool(os.getenv("MYCC_TEST_MODE", ""))
-
-        # Set up paths for test mode if needed
-        if test_mode:
-            claude_dir = Path.cwd() / ".test_claude"
-            home_dir = Path.cwd() / ".test_home"
-            # Use real data directory but test install locations
-            manager = ModuleManager(claude_dir, home_dir)
-            print("🧪 Using test mode with temporary directories")
-        else:
-            manager = ModuleManager()
+        manager = create_module_manager()
 
         # Uninstall all modules
         if self.all:
@@ -132,17 +124,7 @@ class Status(BaseModel):
     module: Optional[str] = Field(default=None, description="Show status for specific module")
 
     def run(self):
-        # Handle test mode from environment
-        test_mode = bool(os.getenv("MYCC_TEST_MODE", ""))
-
-        # Set up paths for test mode if needed
-        if test_mode:
-            claude_dir = Path.cwd() / ".test_claude"
-            home_dir = Path.cwd() / ".test_home"
-            data_dir = Path.cwd() / ".test_data"
-            manager = ModuleManager(claude_dir, home_dir, data_dir)
-        else:
-            manager = ModuleManager()
+        manager = create_module_manager()
 
         # Show status for specific module or all modules
         manager.show_status(self.module)
@@ -152,17 +134,7 @@ class List(BaseModel):
     """List available modules."""
 
     def run(self):
-        # Handle test mode from environment
-        test_mode = bool(os.getenv("MYCC_TEST_MODE", ""))
-
-        # Set up paths for test mode if needed
-        if test_mode:
-            claude_dir = Path.cwd() / ".test_claude"
-            home_dir = Path.cwd() / ".test_home"
-            data_dir = Path.cwd() / ".test_data"
-            manager = ModuleManager(claude_dir, home_dir, data_dir)
-        else:
-            manager = ModuleManager()
+        manager = create_module_manager()
 
         # List all available modules
         manager.list_modules()
@@ -179,18 +151,7 @@ class Deps(BaseModel):
     """Check dependencies."""
 
     def run(self):
-        # Handle test mode from environment
-        test_mode = bool(os.getenv("MYCC_TEST_MODE", ""))
-
-        # Set up paths for test mode if needed
-        if test_mode:
-            claude_dir = Path.cwd() / ".test_claude"
-            home_dir = Path.cwd() / ".test_home"
-            # Use real data directory but test install locations
-            manager = ModuleManager(claude_dir, home_dir)
-            print("🧪 Using test mode")
-        else:
-            manager = ModuleManager()
+        manager = create_module_manager()
 
         # Just install deps module which checks dependencies
         success = manager.install_module("deps")
