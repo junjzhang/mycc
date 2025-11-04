@@ -1,0 +1,40 @@
+{
+  "pixi-helper": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "high",
+    "promptTriggers": {
+      "keywords": [
+        "pixi",
+        "pixi.toml",
+        "pixi.lock",
+        "pixi install",
+        "pixi run",
+        "pixi shell",
+        "pixi add",
+        "pixi task",
+        "pixi environment",
+        "conda environment",
+        "package manager",
+        "environment setup",
+        "frozen environment",
+        "task definition",
+        "multi-environment"
+      ],
+      "intentPatterns": [
+        "(how to|how do I|explain).*?(pixi|environment|install|package)",
+        "(setup|configure|create).*?(environment|pixi|conda)",
+        "(add|install|manage).*?(package|dependency|environment)",
+        "(run|execute).*?(task|command|script).*?(pixi|environment)",
+        "(debug|fix|troubleshoot).*?(pixi|environment|task)",
+        "(define|create|add).*?task"
+      ]
+    },
+    "fileTriggers": {
+      "pathPatterns": [
+        "**/pixi.toml",
+        "**/pixi.lock"
+      ]
+    }
+  }
+}
