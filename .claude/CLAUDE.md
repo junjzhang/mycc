@@ -143,3 +143,4 @@ Before starting any analysis, ask yourself:
 
 ## Important Reminders
 - Never imclude co-author information in commit.
+- When you make PR, please check if there is `.github/pull_request_template.md` in your current working directory. If it exists, please follow the template to fill in the PR description.
