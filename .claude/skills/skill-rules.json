@@ -1,0 +1,30 @@
+{
+  "observe-act-loop": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": [
+        "run tests",
+        "pytest",
+        "test it",
+        "submit",
+        "deploy",
+        "resubmit",
+        "verify",
+        "check if it works",
+        "debug",
+        "why is it failing",
+        "check logs",
+        "tail logs",
+        "watch",
+        "diagnose"
+      ],
+      "intentPatterns": [
+        "(run|execute|launch|start|submit|deploy).*?(test|job|server|service)",
+        "(verify|check|validate|confirm).*?(works|correct|fixed|passes)",
+        "(debug|diagnose|investigate).*?(error|failure|crash|timeout)"
+      ]
+    }
+  }
+}

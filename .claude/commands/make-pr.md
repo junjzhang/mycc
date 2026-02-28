@@ -202,9 +202,3 @@ fi
 - Issue linking follows GitHub's automatic closing keywords
 - PR templates are used exactly as you've configured them
 - The PR maintains full authenticity as your work
-
-**Requirements:**
-- Git repository with remote origin
-- GitHub CLI (`gh`) installed and authenticated
-- Target branch must exist (locally or remotely)
-- Current branch should have commits ahead of target branch
