@@ -26,5 +26,44 @@
         "(debug|diagnose|investigate).*?(error|failure|crash|timeout)"
       ]
     }
+  },
+  "query-logs": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": [
+        "query logs",
+        "check logs",
+        "pod logs",
+        "victoria logs",
+        "search logs",
+        "find in logs",
+        "log query"
+      ],
+      "intentPatterns": [
+        "(query|search|check|find|look at|grep).*?(logs?|output|stderr)",
+        "(what|why).*?(log|error|crash|traceback).*?(say|show|contain)"
+      ]
+    }
+  },
+  "monitor-job": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": [
+        "monitor",
+        "watch job",
+        "background agent",
+        "check job status",
+        "submit and watch",
+        "keep an eye on"
+      ],
+      "intentPatterns": [
+        "(monitor|watch|track|check on).*?(job|pod|training|inference|deploy)",
+        "(submit|launch).*?(monitor|watch|background)"
+      ]
+    }
   }
 }

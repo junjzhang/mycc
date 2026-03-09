@@ -115,8 +115,10 @@ start → probe → fix → restart
 
 **Heaviest: remote job**
 ```
-submit → find pod → tail logs → fix → kill old job → resubmit
+submit → find pod → background watch → fix on notify → kill old job → resubmit
 ```
+
+**Background watch:** For remote jobs, prefer launching a background Agent (`run_in_background=True`) to watch logs instead of blocking the main conversation. Instruct the agent to report back immediately when it detects errors or anomalies.
 
 Match the verification level to the change. Don't submit a remote job when a local test suffices.
 
