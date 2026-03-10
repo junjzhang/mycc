@@ -30,3 +30,4 @@ When reviewing code, judge directly:
 - **PRs:** Check for `.github/pull_request_template.md` and follow it if it exists.
 - **Submodule PRs:** PR the submodule first, wait for merge, then update the ref and PR the parent repo.
 - **Long-running experiments:** Always use a background agent to monitor job submissions (training, inference, etc.) instead of blocking the main conversation.
+- **Keep observations in sync.** After code changes, check if affected CLAUDE.md files, skills, rules, or memory entries need updating. Stale observations are worse than no observations.
