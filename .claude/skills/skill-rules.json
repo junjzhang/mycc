@@ -65,5 +65,45 @@
         "(submit|launch).*?(monitor|watch|background)"
       ]
     }
+  },
+  "log-first-failure": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "high",
+    "promptTriggers": {
+      "keywords": [
+        "first failure",
+        "timeline",
+        "cascading errors",
+        "watchdog timeout",
+        "collective timeout",
+        "find root cause from logs"
+      ],
+      "intentPatterns": [
+        "(find|identify|locate).*?(first|earliest).*?(error|failure)",
+        "(build|make|create).*?(timeline).*?(failure|incident|crash)",
+        "(separate|distinguish).*?(root cause|cause).*?(cascade|downstream)"
+      ]
+    }
+  },
+  "upstream-bug-report": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": [
+        "upstream issue",
+        "file issue",
+        "bug report",
+        "open issue",
+        "rfc comment",
+        "minimal reproduction"
+      ],
+      "intentPatterns": [
+        "(file|create|open|write|draft).*?(issue|bug report|report)",
+        "(comment|reply).*?(rfc|issue)",
+        "(summarize|convert|turn).*?(debug|findings).*?(issue|report)"
+      ]
+    }
   }
 }
