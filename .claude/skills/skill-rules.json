@@ -105,5 +105,24 @@
         "(summarize|convert|turn).*?(debug|findings).*?(issue|report)"
       ]
     }
+  },
+  "weekly-report": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": [
+        "周报",
+        "weekly report",
+        "work summary",
+        "工作总结",
+        "summarize my work",
+        "总结工作"
+      ],
+      "intentPatterns": [
+        "(write|generate|create|draft|做|写|生成).*?(周报|weekly report|work summary|工作总结)",
+        "(summarize|总结).*?(commits?|PRs?|work|工作).*?(week|month|since|从)"
+      ]
+    }
   }
 }

@@ -67,6 +67,22 @@ for line in sys.stdin:
 " | sort
 ```
 
+## Querying dmesg / Kernel Logs
+
+dmesg logs use a **different schema** — no `kubernetes.*` fields. Filter by `hostname` and `log_source` instead:
+
+```
+hostname:"node013" log_source:"dmesg"
+```
+
+Common dmesg queries:
+- **OOM kill**: `log_source:"dmesg" _msg:"oom-kill"` or `_msg:"Killed process"`
+- **Kernel errors on a node**: `hostname:"node013" log_source:"dmesg"`
+
+Key fields in dmesg entries: `hostname`, `log_source` ("dmesg"), `SYSLOG_IDENTIFIER` ("kernel"), `TRANSPORT` ("kernel").
+
+To find a pod's hostname: query a known pod log entry and read the `kubernetes.host` field.
+
 ## When to Prefer This Over kubectl logs
 
 - Pod already terminated — kubectl may not have logs
